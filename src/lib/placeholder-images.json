@@ -1,3 +1,40 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "tomatoes",
+      "description": "Crate of fresh tomatoes",
+      "imageUrl": "https://images.unsplash.com/photo-1724908097678-1cb50ee5e352?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx0b21hdG9lcyUyMGNyYXRlfGVufDB8fHx8MTc2ODQwOTA5MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tomatoes crate"
+    },
+    {
+      "id": "potatoes",
+      "description": "Sack of potatoes",
+      "imageUrl": "https://images.unsplash.com/photo-1649092052551-aeef324d115f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwb3RhdG9lcyUyMHNhY2t8ZW58MHx8fHwxNzY4NDA5MDkwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "potatoes sack"
+    },
+    {
+      "id": "apples",
+      "description": "Crate of green apples",
+      "imageUrl": "https://images.unsplash.com/photo-1599678914948-8e0a39f42a31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhcHBsZXMlMjBjcmF0ZXxlbnwwfHx8fDE3Njg0MDkwODl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "apples crate"
+    },
+    {
+      "id": "lettuce",
+      "description": "Fresh lettuce heads",
+      "imageUrl": "https://images.unsplash.com/photo-1591193144634-a2bf060fdb36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsZXR0dWNlfGVufDB8fHx8MTc2ODQwOTA4OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lettuce"
+    },
+    {
+      "id": "onions",
+      "description": "Bag of onions",
+      "imageUrl": "https://images.unsplash.com/photo-1580201092675-a0a6a6cafbb1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxvbmlvbnN8ZW58MHx8fHwxNzY4NDA5MDkwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "onions"
+    },
+    {
+      "id": "grapes",
+      "description": "Crate of grapes",
+      "imageUrl": "https://images.unsplash.com/photo-1580451359753-6f163ed6c244?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxncmFwZXMlMjBjcmF0ZXxlbnwwfHx8fDE3Njg0MDkwOTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "grapes crate"
+    }
+  ]
 }
