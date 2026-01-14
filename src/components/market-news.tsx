@@ -17,7 +17,7 @@ export function MarketNews() {
     const fetchNews = async () => {
       try {
         setLoading(true);
-        const result = await generateMarketNews({ query: 'Últimas noticias sobre agricultura y precios de productos en Mendoza y Argentina' });
+        const result = await generateMarketNews();
         setNews(result.articles);
         setError(null);
       } catch (e) {
@@ -68,7 +68,7 @@ export function MarketNews() {
               <CardHeader>
                 <CardTitle className="text-2xl text-green-300">{article.title}</CardTitle>
                 <CardDescription className="text-green-600">
-                  {format(new Date(article.date), "d 'de' MMMM, yyyy", { locale: es })} - Por {article.source}
+                  {format(new Date(article.date), "d 'de' MMMM, yyyy", { locale: es })} - Fuente: {article.source}
                 </CardDescription>
               </CardHeader>
               <CardContent>
