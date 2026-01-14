@@ -34,7 +34,7 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
     return { mostVolatile, leastVolatile };
   }, [stalls]);
 
-  const SummaryCard = ({ title, icon, items }: { title: string; icon: React.ReactNode; items: { name: string, value: string }[] }) => (
+  const SummaryCard = ({ title, icon, items }: { title: React.ReactNode; icon: React.ReactNode; items: { name: string, value: string }[] }) => (
     <Card className="bg-gray-900/50 border-green-800 text-green-400">
       <CardHeader>
         <CardTitle className="text-green-300 flex items-center gap-2">
@@ -61,14 +61,14 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
         <h2 className="text-3xl font-headline text-green-300 border-b border-green-800 pb-2 mb-6">
           Resumen del Mercado
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <SummaryCard 
-            title="Lo más vendido (semanal)"
+            title={<span>Lo más vendido <span className="text-xs text-muted-foreground">(semanal)</span></span>}
             icon={<TrendingUp className="text-success" />}
             items={marketCommentary.mostSold.map(name => ({ name, value: '' }))}
           />
           <SummaryCard 
-            title="Lo menos vendido (semanal)"
+            title={<span>Lo menos vendido <span className="text-xs text-muted-foreground">(semanal)</span></span>}
             icon={<TrendingDown className="text-danger" />}
             items={marketCommentary.leastSold.map(name => ({ name, value: '' }))}
           />
