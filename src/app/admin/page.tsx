@@ -6,11 +6,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PlusCircle, TriangleAlert } from 'lucide-react';
 
-import { mockStalls, mockNews } from '@/lib/data.tsx';
-import type { Stall, Product, PriceHistory, NewsArticle } from '@/lib/types';
+import { mockStalls } from '@/lib/data.tsx';
+import type { Stall, Product, PriceHistory } from '@/lib/types';
 import { validatePriceAction } from './actions';
 import { UpdatePriceRow } from '@/components/admin/update-price-row';
-import { ManageNews } from '@/components/admin/manage-news';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,7 +55,6 @@ type NewProductFormData = z.infer<typeof newProductSchema>;
 
 export default function AdminPage() {
   const [stalls, setStalls] = useState<Stall[]>(mockStalls);
-  const [news, setNews] = useState<NewsArticle[]>(mockNews);
   const [validationAlert, setValidationAlert] = useState<{
     open: boolean;
     reason: string;
@@ -174,34 +172,12 @@ export default function AdminPage() {
     });
   }
 
-  const handleAddNews = (article: Omit<NewsArticle, 'id' | 'date'>) => {
-    const newArticle: NewsArticle = {
-      id: `news-${Date.now()}`,
-      date: new Date().toISOString(),
-      ...article,
-    };
-    setNews(prev => [newArticle, ...prev]);
-    toast({
-      title: 'Noticia Agregada',
-      description: `Se ha publicado "${article.title}".`,
-    });
-  };
-
-  const handleDeleteNews = (articleId: string) => {
-    setNews(prev => prev.filter(a => a.id !== articleId));
-    toast({
-      title: 'Noticia Eliminada',
-      variant: 'destructive',
-    });
-  };
-
   return (
     <>
       <Tabs defaultValue="update">
-        <TabsList className="grid w-full grid-cols-3 md:w-[600px]">
+        <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
           <TabsTrigger value="update">Actualizar Precios</TabsTrigger>
           <TabsTrigger value="add">Agregar Producto</TabsTrigger>
-          <TabsTrigger value="news">Gestionar Noticias</TabsTrigger>
         </TabsList>
         <TabsContent value="update">
           <div className="space-y-8">
@@ -331,13 +307,6 @@ export default function AdminPage() {
               </Form>
             </CardContent>
           </Card>
-        </TabsContent>
-        <TabsContent value="news">
-          <ManageNews 
-            news={news}
-            onAddNews={handleAddNews}
-            onDeleteNews={handleDeleteNews}
-          />
         </TabsContent>
       </Tabs>
 

@@ -25,6 +25,5 @@ export type NewsArticle = {
   title: string;
   date: string;
   source: string;
-  summary: string;
   content: string;
 };
