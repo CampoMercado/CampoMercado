@@ -1,7 +1,7 @@
 'use client';
 
 import type { Stall } from '@/lib/types';
-import { ProductTable } from './product-table';
+import { ProductCard } from './product-card';
 
 export function StallsDisplay({ stalls }: { stalls: Stall[] }) {
   return (
@@ -18,7 +18,11 @@ export function StallsDisplay({ stalls }: { stalls: Stall[] }) {
             <p className="text-green-500">{stall.name}</p>
           </div>
           <div className="p-4">
-            <ProductTable products={stall.products} />
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {stall.products.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
           </div>
         </div>
       ))}
