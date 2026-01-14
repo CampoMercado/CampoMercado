@@ -11,7 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ArrowDown, ArrowUp, TrendingDown, TrendingUp, Shield, Zap } from 'lucide-react';
+import { ArrowDown, ArrowUp, TrendingDown, TrendingUp, Shield, Zap, Minus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { marketCommentary } from '@/lib/market-commentary';
 
@@ -23,6 +23,9 @@ type ProductAnalysis = {
   maxPrice: number;
   priceSpread: number;
   volatility: number;
+  dailyChange: number;
+  weeklyChange: number;
+  movingAverage7d: number;
   stalls: { name: string; number: number; price: number }[];
 };
 
@@ -68,11 +71,21 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
       const minPrice = Math.min(...data.prices);
       const maxPrice = Math.max(...data.prices);
       
-      // Calculate volatility (coefficient of variation)
       const allHistoricalPrices = data.priceHistories.flat();
       const mean = allHistoricalPrices.reduce((a, b) => a + b, 0) / allHistoricalPrices.length;
       const stdDev = Math.sqrt(allHistoricalPrices.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / allHistoricalPrices.length);
       const volatility = mean > 0 ? (stdDev / mean) * 100 : 0; // as percentage
+
+      // Take the longest price history for calculations
+      const representativeHistory = data.priceHistories.reduce((a,b) => a.length > b.length ? a : b, []);
+      const currentPrice = representativeHistory.at(-1) ?? 0;
+      const prevPrice = representativeHistory.at(-2) ?? currentPrice;
+      const weeklyPrice = representativeHistory.at(-8) ?? representativeHistory.at(0) ?? currentPrice;
+
+      const dailyChange = prevPrice > 0 ? ((currentPrice - prevPrice) / prevPrice) * 100 : 0;
+      const weeklyChange = weeklyPrice > 0 ? ((currentPrice - weeklyPrice) / weeklyPrice) * 100 : 0;
+
+      const movingAverage7d = representativeHistory.slice(-7).reduce((acc, val) => acc + val, 0) / Math.min(representativeHistory.length, 7);
 
       result.push({
         productName,
@@ -82,6 +95,9 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
         maxPrice,
         priceSpread: maxPrice - minPrice,
         volatility,
+        dailyChange,
+        weeklyChange,
+        movingAverage7d,
         stalls: data.stalls.sort((a, b) => a.price - b.price),
       });
     }
@@ -115,54 +131,21 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
   }, [allProducts, analysis]);
 
 
+  const ChangeIndicator = ({ value }: { value: number }) => {
+    const isUp = value > 0;
+    const isDown = value < 0;
+    const Icon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
+    return (
+      <div className={cn('flex items-center justify-end gap-1', isUp && 'text-green-500', isDown && 'text-red-500')}>
+        <span>{value.toFixed(1)}%</span>
+        <Icon size={14} />
+      </div>
+    );
+  };
+  
   return (
     <div className="space-y-8">
-      <Card className="bg-gray-900/50 border-green-800 text-green-400">
-        <CardHeader>
-          <CardTitle className="text-green-300">Análisis de Precios por Producto</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-green-800 hover:bg-gray-900">
-                  <TableHead className="text-green-300">Producto</TableHead>
-                  <TableHead className="text-green-300">Variedad</TableHead>
-                  <TableHead className="text-right text-green-300">Precio Promedio</TableHead>
-                  <TableHead className="text-right text-green-300">Precio Mínimo</TableHead>
-                  <TableHead className="text-right text-green-300">Precio Máximo</TableHead>
-                  <TableHead className="text-right text-green-300">Diferencia</TableHead>
-                  <TableHead className="text-right text-green-300">Volatilidad</TableHead>
-                  <TableHead className="text-center text-green-300 hidden xl:table-cell">Puestos</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {analysis.map((item) => (
-                  <TableRow key={`${item.productName}-${item.variety}`} className="border-green-900">
-                    <TableCell className="font-bold text-green-400">{item.productName}</TableCell>
-                    <TableCell className="text-green-500">{item.variety}</TableCell>
-                    <TableCell className="text-right text-green-200 font-medium">${item.avgPrice.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</TableCell>
-                    <TableCell className="text-right text-green-500">${item.minPrice.toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-red-500">${item.maxPrice.toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-green-400">${item.priceSpread.toLocaleString()}</TableCell>
-                     <TableCell className="text-right text-accent">{item.volatility.toFixed(1)}%</TableCell>
-                    <TableCell className="text-center hidden xl:table-cell">
-                        <div className="flex gap-2 justify-center items-center">
-                            {item.stalls.map(s => (
-                                <div key={s.number} className="text-xs border border-green-800 bg-black rounded-sm px-1.5 py-0.5" title={`${s.name} - $${s.price.toLocaleString()}`}>
-                                    #{s.number}
-                                </div>
-                            ))}
-                        </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-      <Card className="bg-gray-900/50 border-green-800 text-green-400">
+       <Card className="bg-gray-900/50 border-green-800 text-green-400">
             <CardHeader>
                 <CardTitle className="text-green-300">Resumen del Mercado</CardTitle>
             </CardHeader>
@@ -215,6 +198,54 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
                 </div>
             </CardContent>
         </Card>
+      <Card className="bg-gray-900/50 border-green-800 text-green-400">
+        <CardHeader>
+          <CardTitle className="text-green-300">Análisis de Precios por Producto</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-green-800 hover:bg-gray-900 text-xs uppercase">
+                  <TableHead className="text-green-300">Producto</TableHead>
+                  <TableHead className="text-right text-green-300">P. Promedio</TableHead>
+                  <TableHead className="text-right text-green-300">Var. Diaria</TableHead>
+                  <TableHead className="text-right text-green-300">Var. Semanal</TableHead>
+                  <TableHead className="text-right text-green-300">PPM (7d)</TableHead>
+                  <TableHead className="text-right text-green-300">Volatilidad</TableHead>
+                  <TableHead className="text-center text-green-300 hidden md:table-cell">Puestos</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {analysis.map((item) => (
+                  <TableRow key={`${item.productName}-${item.variety}`} className="border-green-900">
+                    <TableCell className="font-bold text-green-400">
+                      <div>{item.productName}</div>
+                      <div className="text-xs text-green-600">{item.variety}</div>
+                    </TableCell>
+                    <TableCell className="text-right text-green-200 font-medium">${item.avgPrice.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</TableCell>
+                    <TableCell className="text-right"><ChangeIndicator value={item.dailyChange} /></TableCell>
+                    <TableCell className="text-right"><ChangeIndicator value={item.weeklyChange} /></TableCell>
+                    <TableCell className="text-right text-green-400">${item.movingAverage7d.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</TableCell>
+                    <TableCell className="text-right text-accent">{item.volatility.toFixed(1)}%</TableCell>
+                    <TableCell className="text-center hidden md:table-cell">
+                        <div className="flex gap-1 justify-center items-center">
+                            {item.stalls.map(s => (
+                                <div key={s.number} className="text-xs border border-green-800 bg-black rounded-sm px-1.5 py-0.5" title={`${s.name} - $${s.price.toLocaleString()}`}>
+                                    #{s.number}
+                                </div>
+                            ))}
+                        </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
+    
