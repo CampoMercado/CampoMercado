@@ -7,6 +7,7 @@ import { es } from 'date-fns/locale';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from './ui/card';
 import { generateMarketNews } from '@/ai/flows/generate-market-news-flow';
 import { Skeleton } from './ui/skeleton';
+import ReactMarkdown from 'react-markdown';
 
 export function MarketNews() {
   const [news, setNews] = useState<NewsArticle[]>([]);
@@ -72,11 +73,8 @@ export function MarketNews() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="prose prose-invert prose-p:text-green-400 prose-headings:text-green-300">
-                  <div
-                    className="text-green-400/90 space-y-4"
-                    dangerouslySetInnerHTML={{ __html: article.content.replace(/\n/g, '<br />') }}
-                  />
+                <div className="prose prose-invert prose-p:text-green-400 prose-strong:text-green-300 prose-p:leading-relaxed">
+                   <ReactMarkdown>{article.content}</ReactMarkdown>
                 </div>
               </CardContent>
             </Card>
