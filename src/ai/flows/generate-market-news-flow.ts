@@ -79,15 +79,19 @@ const newsGenerationPrompt = ai.definePrompt({
   name: 'newsGenerationPrompt',
   tools: [searchWeb],
   prompt: `You are an expert agricultural market analyst.
-Your task is to search the web for the latest news regarding the user's query.
-You MUST use the searchWeb tool.
-Once you have the search results, synthesize the information into 2-3 news articles.
-For each article, you must provide a title, a source (the URL of the article), a publication date, and a detailed summary of the content.
-The content should be written in Spanish, in a professional and objective tone.
-The date should be today's date.
-Generate a unique ID for each article.
+Your task is to analyze the latest news based on the user's query and generate a valid JSON response.
+You MUST use the searchWeb tool to gather information.
 
-Output in JSON format: {{outputJson}}
+Based on the search results, synthesize the information into 2-3 news articles.
+For each article, you must provide:
+- A unique ID.
+- A title.
+- The publication date (today's date in ISO 8601 format).
+- The source (the URL of the original article).
+- A detailed summary of the content in Spanish and Markdown format.
+
+Your final output must be ONLY the JSON object that conforms to the following schema.
+{{outputJson}}
 `,
   output: {
     schema: MarketNewsOutputSchema,
@@ -102,6 +106,10 @@ const generateMarketNewsFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await newsGenerationPrompt(input);
-    return output!;
+    if (!output) {
+      // In case of a null response from the AI, return an empty array to prevent crashing.
+      return { articles: [] };
+    }
+    return output;
   }
 );
