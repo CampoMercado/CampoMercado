@@ -57,6 +57,7 @@ export function UpdatePriceRow({
       <>
         <TableHead>Producto</TableHead>
         <TableHead>Variedad</TableHead>
+        <TableHead>Categoría</TableHead>
         <TableHead>Precio Actual</TableHead>
         <TableHead>Última Act.</TableHead>
         <TableHead className="w-[150px]">Nuevo Precio</TableHead>
@@ -76,6 +77,7 @@ export function UpdatePriceRow({
         <form onSubmit={form.handleSubmit(onSubmit)} className="contents">
           <TableCell className="font-medium">{product.name}</TableCell>
           <TableCell>{product.variety}</TableCell>
+          <TableCell>{product.category}</TableCell>
           <TableCell>${currentPrice?.price.toLocaleString() ?? 'N/A'}</TableCell>
           <TableCell>
             {currentPrice

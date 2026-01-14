@@ -48,6 +48,7 @@ const newProductSchema = z.object({
   stallId: z.string().min(1, 'Debe seleccionar un puesto.'),
   name: z.string().min(1, 'El nombre es requerido.'),
   variety: z.string().min(1, 'La variedad es requerida.'),
+  category: z.string().min(1, 'La categoría es requerida.'),
   price: z.coerce.number().positive('El precio inicial debe ser positivo.'),
 });
 
@@ -138,6 +139,7 @@ export default function AdminPage() {
       id: `${data.stallId}-${data.name}-${Math.random()}`,
       name: data.name,
       variety: data.variety,
+      category: data.category,
       priceHistory: [{ date: new Date().toISOString(), price: data.price }],
     };
 
@@ -290,6 +292,19 @@ export default function AdminPage() {
                         <FormLabel>Variedad</FormLabel>
                         <FormControl>
                           <Input placeholder="Ej: Redondo" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={newProductForm.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoría</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: Hortalizas de Fruto" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

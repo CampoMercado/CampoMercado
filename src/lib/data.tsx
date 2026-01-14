@@ -20,6 +20,7 @@ export const mockStalls: Stall[] = [
         id: '1-1',
         name: 'Tomate',
         variety: 'Redondo',
+        category: 'Hortalizas de Fruto',
         priceHistory: [
           { date: fourDaysAgo.toISOString(), price: 3100 },
           { date: threeDaysAgo.toISOString(), price: 3150 },
@@ -32,6 +33,7 @@ export const mockStalls: Stall[] = [
         id: '1-2',
         name: 'Papa',
         variety: 'Spunta',
+        category: 'Tubérculos',
         priceHistory: [
           { date: fourDaysAgo.toISOString(), price: 1650 },
           { date: threeDaysAgo.toISOString(), price: 1600 },
@@ -44,6 +46,7 @@ export const mockStalls: Stall[] = [
         id: '1-3',
         name: 'Manzana',
         variety: 'Red Delicious',
+        category: 'Frutas de Pepita',
         priceHistory: [
           { date: fourDaysAgo.toISOString(), price: 4000 },
           { date: threeDaysAgo.toISOString(), price: 4050 },
@@ -63,6 +66,7 @@ export const mockStalls: Stall[] = [
         id: '2-1',
         name: 'Tomate',
         variety: 'Perita',
+        category: 'Hortalizas de Fruto',
         priceHistory: [
           { date: fourDaysAgo.toISOString(), price: 2900 },
           { date: threeDaysAgo.toISOString(), price: 3050 },
@@ -75,6 +79,7 @@ export const mockStalls: Stall[] = [
         id: '2-2',
         name: 'Lechuga',
         variety: 'Criolla',
+        category: 'Hortalizas de Hoja',
         priceHistory: [
           { date: fourDaysAgo.toISOString(), price: 1250 },
           { date: threeDaysAgo.toISOString(), price: 1250 },
@@ -87,6 +92,7 @@ export const mockStalls: Stall[] = [
         id: '2-3',
         name: 'Cebolla',
         variety: 'Morada',
+        category: 'Hortalizas de Bulbo',
         priceHistory: [
           { date: fourDaysAgo.toISOString(), price: 950 },
           { date: threeDaysAgo.toISOString(), price: 980 },
@@ -106,6 +112,7 @@ export const mockStalls: Stall[] = [
         id: '3-1',
         name: 'Papa',
         variety: 'Andina',
+        category: 'Tubérculos',
         priceHistory: [
           { date: fourDaysAgo.toISOString(), price: 1800 },
           { date: threeDaysAgo.toISOString(), price: 1750 },
@@ -118,6 +125,7 @@ export const mockStalls: Stall[] = [
         id: '3-2',
         name: 'Uva',
         variety: 'Malbec',
+        category: 'Frutas de Vid',
         priceHistory: [
           { date: fourDaysAgo.toISOString(), price: 2600 },
           { date: threeDaysAgo.toISOString(), price: 2550 },
@@ -130,6 +138,7 @@ export const mockStalls: Stall[] = [
         id: '3-3',
         name: 'Cebolla',
         variety: 'Blanca',
+        category: 'Hortalizas de Bulbo',
         priceHistory: [
           { date: fourDaysAgo.toISOString(), price: 850 },
           { date: threeDaysAgo.toISOString(), price: 880 },

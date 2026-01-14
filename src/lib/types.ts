@@ -7,6 +7,7 @@ export type Product = {
   id: string;
   name: string;
   variety: string;
+  category: string;
   priceHistory: PriceHistory[];
 };
 
