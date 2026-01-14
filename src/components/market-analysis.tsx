@@ -117,7 +117,52 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
 
   return (
     <div className="space-y-8">
-        <Card className="bg-gray-900/50 border-green-800 text-green-400">
+      <Card className="bg-gray-900/50 border-green-800 text-green-400">
+        <CardHeader>
+          <CardTitle className="text-green-300">Análisis de Precios por Producto</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-green-800 hover:bg-gray-900">
+                  <TableHead className="text-green-300">Producto</TableHead>
+                  <TableHead className="text-green-300">Variedad</TableHead>
+                  <TableHead className="text-right text-green-300">Precio Promedio</TableHead>
+                  <TableHead className="text-right text-green-300">Precio Mínimo</TableHead>
+                  <TableHead className="text-right text-green-300">Precio Máximo</TableHead>
+                  <TableHead className="text-right text-green-300">Diferencia</TableHead>
+                  <TableHead className="text-right text-green-300">Volatilidad</TableHead>
+                  <TableHead className="text-center text-green-300 hidden xl:table-cell">Puestos</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {analysis.map((item) => (
+                  <TableRow key={`${item.productName}-${item.variety}`} className="border-green-900">
+                    <TableCell className="font-bold text-green-400">{item.productName}</TableCell>
+                    <TableCell className="text-green-500">{item.variety}</TableCell>
+                    <TableCell className="text-right text-green-200 font-medium">${item.avgPrice.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</TableCell>
+                    <TableCell className="text-right text-green-500">${item.minPrice.toLocaleString()}</TableCell>
+                    <TableCell className="text-right text-red-500">${item.maxPrice.toLocaleString()}</TableCell>
+                    <TableCell className="text-right text-green-400">${item.priceSpread.toLocaleString()}</TableCell>
+                     <TableCell className="text-right text-accent">{item.volatility.toFixed(1)}%</TableCell>
+                    <TableCell className="text-center hidden xl:table-cell">
+                        <div className="flex gap-2 justify-center items-center">
+                            {item.stalls.map(s => (
+                                <div key={s.number} className="text-xs border border-green-800 bg-black rounded-sm px-1.5 py-0.5" title={`${s.name} - $${s.price.toLocaleString()}`}>
+                                    #{s.number}
+                                </div>
+                            ))}
+                        </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+      <Card className="bg-gray-900/50 border-green-800 text-green-400">
             <CardHeader>
                 <CardTitle className="text-green-300">Resumen del Mercado</CardTitle>
             </CardHeader>
@@ -170,51 +215,6 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
                 </div>
             </CardContent>
         </Card>
-      <Card className="bg-gray-900/50 border-green-800 text-green-400">
-        <CardHeader>
-          <CardTitle className="text-green-300">Análisis de Precios por Producto</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-green-800 hover:bg-gray-900">
-                  <TableHead className="text-green-300">Producto</TableHead>
-                  <TableHead className="text-green-300">Variedad</TableHead>
-                  <TableHead className="text-right text-green-300">Precio Promedio</TableHead>
-                  <TableHead className="text-right text-green-300">Precio Mínimo</TableHead>
-                  <TableHead className="text-right text-green-300">Precio Máximo</TableHead>
-                  <TableHead className="text-right text-green-300">Diferencia</TableHead>
-                  <TableHead className="text-right text-green-300">Volatilidad</TableHead>
-                  <TableHead className="text-center text-green-300 hidden xl:table-cell">Puestos</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {analysis.map((item) => (
-                  <TableRow key={`${item.productName}-${item.variety}`} className="border-green-900">
-                    <TableCell className="font-bold text-green-400">{item.productName}</TableCell>
-                    <TableCell className="text-green-500">{item.variety}</TableCell>
-                    <TableCell className="text-right text-green-200 font-medium">${item.avgPrice.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}</TableCell>
-                    <TableCell className="text-right text-green-500">${item.minPrice.toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-red-500">${item.maxPrice.toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-green-400">${item.priceSpread.toLocaleString()}</TableCell>
-                     <TableCell className="text-right text-accent">{item.volatility.toFixed(1)}%</TableCell>
-                    <TableCell className="text-center hidden xl:table-cell">
-                        <div className="flex gap-2 justify-center items-center">
-                            {item.stalls.map(s => (
-                                <div key={s.number} className="text-xs border border-green-800 bg-black rounded-sm px-1.5 py-0.5" title={`${s.name} - $${s.price.toLocaleString()}`}>
-                                    #{s.number}
-                                </div>
-                            ))}
-                        </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
