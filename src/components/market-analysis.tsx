@@ -13,7 +13,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { DeepAnalysis } from './deep-analysis';
+import { Bot } from 'lucide-react';
+import {
+  generateMarketAnalysis,
+} from '@/app/admin/actions';
 
 type ProductAnalysis = {
   productName: string;
@@ -170,8 +173,18 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
           </div>
         </CardContent>
       </Card>
-
-      <DeepAnalysis stalls={stalls} />
+      
+      <Card className="bg-gray-900/50 border-green-800 text-green-400">
+        <CardHeader>
+          <CardTitle className="text-green-300 flex items-center gap-2">
+            <Bot />
+            Análisis de Mercado Profesional (IA)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className='text-green-500'>Próximamente: Una sección de análisis avanzado impulsado por IA para obtener información aún más profunda sobre las tendencias del mercado, la volatilidad y las oportunidades.</p>
+        </CardContent>
+      </Card>
 
     </div>
   );
