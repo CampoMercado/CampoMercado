@@ -41,7 +41,7 @@ export default function Home() {
             <TabsTrigger value="analysis">Análisis de Mercado</TabsTrigger>
           </TabsList>
           <TabsContent value="market">
-            <StallsDisplay stalls={stalls} />
+            <StallsDisplay stalls={stalls} allProducts={allProducts} />
           </TabsContent>
           <TabsContent value="analysis">
             <MarketAnalysis stalls={stalls} />

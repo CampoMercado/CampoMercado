@@ -16,3 +16,5 @@ export type Stall = {
   number: number;
   products: Product[];
 };
+
+export type TickerProduct = Product & { stallName: string, stallNumber: number };
