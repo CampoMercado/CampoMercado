@@ -9,47 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-
-// Mock search tool. In a real application, this would use a real search API.
-const searchWeb = ai.defineTool(
-  {
-    name: 'searchWeb',
-    description: 'Searches the web for a given query and returns relevant articles.',
-    inputSchema: z.object({ query: z.string() }),
-    outputSchema: z.object({
-      results: z.array(
-        z.object({
-          title: z.string(),
-          url: z.string().url(),
-          snippet: z.string(),
-        })
-      ),
-    }),
-  },
-  async ({ query }) => {
-    console.log(`[WebSearch Tool] Searching for: ${query}`);
-    // These are mock results and do not reflect real-time web search.
-    return {
-      results: [
-        {
-          title: "El precio del tomate en Mendoza se mantiene estable a pesar de la inflación",
-          url: "https://www.example.com/noticia-tomate-mendoza",
-          snippet: "A pesar de la inflación, el precio del tomate en Mendoza se ha mantenido estable durante el último mes. Productores locales atribuyen esto a una buena cosecha y a la competencia en el mercado.",
-        },
-        {
-          title: "Preocupación en el sector vitivinícola por las heladas tardías",
-          url: "https://www.example.com/noticia-heladas-vinos",
-          snippet: "Las heladas tardías en la región de Cuyo han generado preocupación entre los productores de vino. Se estima que la producción de Malbec podría verse afectada en un 15%.",
-        },
-        {
-          title: "Aumenta la exportación de peras y manzanas argentinas a Brasil",
-          url: "https://www.example.com/noticia-exportacion-frutas",
-          snippet: "Las exportaciones de peras y manzanas desde Argentina hacia Brasil han experimentado un aumento del 10% en el último trimestre, impulsadas por un tipo de cambio favorable y una fuerte demanda.",
-        },
-      ],
-    };
-  }
-);
+import {search} from 'genkit/tools';
 
 
 const NewsArticleSchema = z.object({
@@ -77,16 +37,16 @@ export async function generateMarketNews(input: MarketNewsInput): Promise<Market
 
 const newsGenerationPrompt = ai.definePrompt({
   name: 'newsGenerationPrompt',
-  tools: [searchWeb],
+  tools: [search],
   prompt: `You are an expert agricultural market analyst.
 Your task is to analyze the latest news based on the user's query and generate a valid JSON response.
-You MUST use the searchWeb tool to gather information.
+You MUST use the provided search tool to gather real-time, up-to-date information from the web.
 
-Based on the search results, synthesize the information into 2-3 news articles.
+Based on the search results for the query '{{query}}', synthesize the information into 2-3 news articles.
 For each article, you must provide:
 - A unique ID.
 - A title.
-- The publication date (today's date in ISO 8601 format).
+- The publication date (use the real date of the article, formatted as ISO 8601).
 - The source (the URL of the original article).
 - A detailed summary of the content in Spanish and Markdown format.
 
