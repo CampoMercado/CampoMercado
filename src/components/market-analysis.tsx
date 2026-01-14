@@ -11,8 +11,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DeepAnalysis } from './deep-analysis';
 
 type ProductAnalysis = {
   productName: string;
@@ -169,6 +170,9 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
           </div>
         </CardContent>
       </Card>
+
+      <DeepAnalysis stalls={stalls} />
+
     </div>
   );
 }
