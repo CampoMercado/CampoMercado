@@ -8,7 +8,6 @@ import { PriceTicker } from '@/components/price-ticker';
 import { StallsDisplay } from '@/components/stalls-display';
 import { MarketAnalysis } from '@/components/market-analysis';
 import { MarketNews } from '@/components/market-news';
-import { SectorAnalysis } from '@/components/sector-analysis';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Home() {
@@ -42,7 +41,6 @@ export default function Home() {
           <TabsList className="mb-4">
             <TabsTrigger value="market">Mercado Diario</TabsTrigger>
             <TabsTrigger value="analysis">Análisis de Mercado</TabsTrigger>
-            <TabsTrigger value="sectors">Análisis Sectorial</TabsTrigger>
             <TabsTrigger value="news">Noticias del Mercado</TabsTrigger>
           </TabsList>
           <TabsContent value="market">
@@ -50,9 +48,6 @@ export default function Home() {
           </TabsContent>
           <TabsContent value="analysis">
             <MarketAnalysis stalls={stalls} />
-          </TabsContent>
-          <TabsContent value="sectors">
-            <SectorAnalysis products={allProducts} />
           </TabsContent>
           <TabsContent value="news">
             <MarketNews news={news} />
