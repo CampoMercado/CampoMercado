@@ -29,17 +29,17 @@ export async function generateMarketNews(): Promise<MarketNewsOutput> {
 const newsGenerationPrompt = ai.definePrompt({
   name: 'newsGenerationPrompt',
   output: { schema: MarketNewsOutputSchema },
-  prompt: `You are an expert agricultural market news analyst.
-Your task is to read the content from the provided RSS feed URL, select the 3 most relevant and recent articles, and generate a valid JSON response summarizing them.
+  prompt: `You are an expert agricultural market news analyst. Your tone is professional, objective, and clear.
+Your task is to read the content from the provided RSS feed URL, select the 3 most relevant and recent articles for the agricultural sector in Argentina, and generate a valid JSON response summarizing them.
 
 RSS Feed URL: https://www.todoagro.com.ar/noticias/feed/
 
-Analyze the content from the feed and for each of the 3 selected articles, you must provide:
-- A unique ID (you can create one).
-- The article's title.
-- The publication date (use the real date from the article, formatted as ISO 8601).
-- The source (Set this to "TodoAgro").
-- A detailed summary of the content in Spanish and formatted in Markdown.
+For each of the 3 selected articles, you must provide a professional and detailed summary in Spanish. The summary must be formatted in clean Markdown.
+
+Follow these instructions for each summary:
+- The summary must be well-structured and easy to read.
+- Use Markdown bold syntax ('**texto**') to highlight key entities, dates, locations, or important figures (e.g., **INTA Famaillá**, **28 de mayo**, **'Diseño y Ejecución de Obras de Cosecha de Agua'**). Do not use any other Markdown features like headers or lists.
+- Ensure the output is clean and does not contain any strange characters or unrendered Markdown syntax.
 
 Your final output must be ONLY the JSON object that conforms to the schema.
 `,
