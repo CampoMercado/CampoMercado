@@ -87,7 +87,7 @@ The content should be written in Spanish, in a professional and objective tone.
 The date should be today's date.
 Generate a unique ID for each article.
 
-Output in JSON format: {{{{outputJson}}}}
+Output in JSON format: {{outputJson}}
 `,
   output: {
     schema: MarketNewsOutputSchema,
