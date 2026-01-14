@@ -9,7 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import {search} from 'genkit/tools';
+import { search } from '@genkit-ai/google-genai';
 
 
 const NewsArticleSchema = z.object({
