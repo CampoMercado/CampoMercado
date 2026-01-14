@@ -145,59 +145,6 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
   
   return (
     <div className="space-y-8">
-       <Card className="bg-gray-900/50 border-green-800 text-green-400">
-            <CardHeader>
-                <CardTitle className="text-green-300">Resumen del Mercado</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
-                <div className="p-4 bg-black rounded-md border border-green-900">
-                    <p className="text-sm text-green-500">Lo más vendido (semanal)</p>
-                    <ul className="space-y-1 mt-2">
-                        {marketCommentary.mostSold.map((item, i) => (
-                            <li key={i} className="flex items-center gap-2 text-green-300">
-                                <TrendingUp size={16} className="text-success"/>
-                                <span>{item}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="p-4 bg-black rounded-md border border-green-900">
-                    <p className="text-sm text-green-500">Lo menos vendido (semanal)</p>
-                    <ul className="space-y-1 mt-2">
-                        {marketCommentary.leastSold.map((item, i) => (
-                            <li key={i} className="flex items-center gap-2 text-green-300">
-                               <TrendingDown size={16} className="text-danger"/>
-                                <span>{item}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="p-4 bg-black rounded-md border border-green-900">
-                    <p className="text-sm text-green-500">Mayor Volatilidad</p>
-                    <ul className="space-y-1 mt-2">
-                        {marketSummary.mostVolatile.map((item, i) => (
-                            <li key={i} className="flex items-center gap-2 text-green-300">
-                               <Zap size={16} className="text-accent"/>
-                               <span>{item.productName} ({item.variety})</span>
-                               <span className="text-xs text-muted-foreground ml-auto">{item.volatility.toFixed(1)}%</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="p-4 bg-black rounded-md border border-green-900">
-                    <p className="text-sm text-green-500">Mayor Estabilidad</p>
-                    <ul className="space-y-1 mt-2">
-                        {marketSummary.mostStable.map((item, i) => (
-                            <li key={i} className="flex items-center gap-2 text-green-300">
-                               <Shield size={16} className="text-primary"/>
-                               <span>{item.productName} ({item.variety})</span>
-                               <span className="text-xs text-muted-foreground ml-auto">{item.volatility.toFixed(1)}%</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </CardContent>
-        </Card>
       <Card className="bg-gray-900/50 border-green-800 text-green-400">
         <CardHeader>
           <CardTitle className="text-green-300">Análisis de Precios por Producto</CardTitle>
@@ -244,8 +191,55 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
           </div>
         </CardContent>
       </Card>
+      <Card className="bg-gray-900/50 border-green-800 text-green-400">
+            <CardHeader>
+                <CardTitle className="text-green-300">Resumen del Mercado</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="p-4 bg-black rounded-md border border-green-900 space-y-1">
+                    <p className="text-sm text-green-500 font-bold mb-2">Lo más vendido (semanal)</p>
+                    {marketCommentary.mostSold.map((item, i) => (
+                        <div key={i} className="flex items-center gap-2 text-green-300">
+                            <TrendingUp size={16} className="text-success flex-shrink-0"/>
+                            <span className="truncate">{item}</span>
+                        </div>
+                    ))}
+                </div>
+                <div className="p-4 bg-black rounded-md border border-green-900 space-y-1">
+                    <p className="text-sm text-green-500 font-bold mb-2">Lo menos vendido (semanal)</p>
+                    {marketCommentary.leastSold.map((item, i) => (
+                        <div key={i} className="flex items-center gap-2 text-green-300">
+                           <TrendingDown size={16} className="text-danger flex-shrink-0"/>
+                            <span className="truncate">{item}</span>
+                        </div>
+                    ))}
+                </div>
+                <div className="p-4 bg-black rounded-md border border-green-900 space-y-1">
+                    <p className="text-sm text-green-500 font-bold mb-2">Mayor Volatilidad</p>
+                    {marketSummary.mostVolatile.map((item, i) => (
+                        <div key={i} className="flex items-center justify-between gap-2 text-green-300">
+                           <div className="flex items-center gap-2 truncate">
+                             <Zap size={16} className="text-accent flex-shrink-0"/>
+                             <span className="truncate">{item.productName} ({item.variety})</span>
+                           </div>
+                           <span className="text-xs text-muted-foreground ml-auto">{item.volatility.toFixed(1)}%</span>
+                        </div>
+                    ))}
+                </div>
+                <div className="p-4 bg-black rounded-md border border-green-900 space-y-1">
+                    <p className="text-sm text-green-500 font-bold mb-2">Mayor Estabilidad</p>
+                    {marketSummary.mostStable.map((item, i) => (
+                        <div key={i} className="flex items-center justify-between gap-2 text-green-300">
+                          <div className="flex items-center gap-2 truncate">
+                            <Shield size={16} className="text-primary flex-shrink-0"/>
+                            <span className="truncate">{item.productName} ({item.variety})</span>
+                          </div>
+                           <span className="text-xs text-muted-foreground ml-auto">{item.volatility.toFixed(1)}%</span>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
     </div>
   );
 }
-
-    
