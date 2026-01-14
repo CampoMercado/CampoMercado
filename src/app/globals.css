@@ -4,57 +4,57 @@
 
 @layer base {
   :root {
-    --background: 140 67% 97%; /* #F0FAF4 */
-    --foreground: 140 25% 15%;
-    --card: 140 60% 99%;
-    --card-foreground: 140 25% 15%;
-    --popover: 140 60% 99%;
-    --popover-foreground: 140 25% 15%;
-    --primary: 140 46% 55%; /* Adjusted from 52% for better contrast */
-    --primary-foreground: 140 50% 10%;
-    --secondary: 140 30% 90%;
-    --secondary-foreground: 140 25% 15%;
-    --muted: 140 30% 90%;
-    --muted-foreground: 140 15% 45%;
-    --accent: 51 100% 50%; /* #FFD700 */
-    --accent-foreground: 51 100% 5%;
+    --background: 220 20% 98%;
+    --foreground: 220 10% 10%;
+    --card: 220 20% 98%;
+    --card-foreground: 220 10% 10%;
+    --popover: 220 20% 98%;
+    --popover-foreground: 220 10% 10%;
+    --primary: 140 80% 45%;
+    --primary-foreground: 140 20% 95%;
+    --secondary: 220 10% 90%;
+    --secondary-foreground: 220 10% 10%;
+    --muted: 220 10% 90%;
+    --muted-foreground: 220 10% 40%;
+    --accent: 50 100% 50%;
+    --accent-foreground: 50 10% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --success: 140 60% 45%;
-    --danger: 0 70% 55%;
-    --border: 140 20% 88%;
-    --input: 140 20% 92%;
-    --ring: 140 46% 55%;
+    --success: 140 70% 40%;
+    --danger: 0 70% 50%;
+    --border: 220 10% 85%;
+    --input: 220 10% 92%;
+    --ring: 140 80% 45%;
     --chart-1: hsl(var(--primary));
     --chart-2: hsl(var(--accent));
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    --radius: 0.3rem;
   }
  
   .dark {
-    --background: 140 10% 10%;
-    --foreground: 140 20% 90%;
-    --card: 140 10% 12%;
-    --card-foreground: 140 20% 90%;
-    --popover: 140 10% 12%;
-    --popover-foreground: 140 20% 90%;
-    --primary: 140 46% 55%;
-    --primary-foreground: 140 50% 10%;
+    --background: 0 0% 8%;
+    --foreground: 140 40% 80%;
+    --card: 0 0% 12%;
+    --card-foreground: 140 40% 80%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 140 40% 80%;
+    --primary: 140 80% 50%;
+    --primary-foreground: 140 20% 10%;
     --secondary: 140 10% 20%;
-    --secondary-foreground: 140 20% 90%;
-    --muted: 140 10% 20%;
-    --muted-foreground: 140 15% 60%;
-    --accent: 51 100% 50%;
-    --accent-foreground: 51 100% 5%;
+    --secondary-foreground: 140 40% 80%;
+    --muted: 140 10% 15%;
+    --muted-foreground: 140 15% 50%;
+    --accent: 50 100% 60%;
+    --accent-foreground: 50 10% 10%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --success: 140 60% 55%;
-    --danger: 0 70% 65%;
+    --success: 140 70% 40%;
+    --danger: 0 70% 50%;
     --border: 140 10% 20%;
     --input: 140 10% 22%;
-    --ring: 140 46% 55%;
+    --ring: 140 80% 50%;
     --chart-1: hsl(var(--primary));
     --chart-2: hsl(var(--accent));
   }
