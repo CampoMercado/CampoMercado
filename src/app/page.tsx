@@ -1,16 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import type { Stall } from '@/lib/types';
-import { mockStalls } from '@/lib/data.tsx';
+import type { Stall, NewsArticle } from '@/lib/types';
+import { mockStalls, mockNews } from '@/lib/data.tsx';
 import { Header } from '@/components/header';
 import { PriceTicker } from '@/components/price-ticker';
 import { StallsDisplay } from '@/components/stalls-display';
 import { MarketAnalysis } from '@/components/market-analysis';
+import { MarketNews } from '@/components/market-news';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Home() {
   const [stalls, setStalls] = useState<Stall[]>(mockStalls);
+  const [news, setNews] = useState<NewsArticle[]>(mockNews);
 
   const allProducts = stalls.flatMap(stall =>
     stall.products.map(p => ({
@@ -39,12 +41,16 @@ export default function Home() {
           <TabsList className="mb-4">
             <TabsTrigger value="market">Mercado Diario</TabsTrigger>
             <TabsTrigger value="analysis">Análisis de Mercado</TabsTrigger>
+            <TabsTrigger value="news">Noticias del Mercado</TabsTrigger>
           </TabsList>
           <TabsContent value="market">
             <StallsDisplay stalls={stalls} allProducts={allProducts} />
           </TabsContent>
           <TabsContent value="analysis">
             <MarketAnalysis stalls={stalls} />
+          </TabsContent>
+          <TabsContent value="news">
+            <MarketNews news={news} />
           </TabsContent>
         </Tabs>
       </main>

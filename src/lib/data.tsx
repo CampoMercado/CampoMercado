@@ -1,4 +1,4 @@
-import type { Stall } from '@/lib/types';
+import type { Stall, NewsArticle } from '@/lib/types';
 
 const today = new Date();
 const yesterday = new Date(today);
@@ -140,4 +140,24 @@ export const mockStalls: Stall[] = [
       },
     ],
   },
+];
+
+
+export const mockNews: NewsArticle[] = [
+  {
+    id: 'news-1',
+    title: 'Análisis Climático: Se esperan heladas tardías en la región de Cuyo',
+    date: threeDaysAgo.toISOString(),
+    source: 'Servicio Meteorológico Agrícola',
+    summary: 'Las bajas temperaturas pronosticadas podrían afectar los cultivos de hoja y vid. Se recomienda a los productores tomar medidas preventivas.',
+    content: 'Un frente frío inesperado está avanzando sobre la región de Cuyo, con pronósticos de heladas tardías que podrían impactar negativamente en la producción de hortalizas de hoja como la lechuga y la espinaca. Los viñedos también se encuentran en una etapa vulnerable.\n\nLos expertos recomiendan el uso de mallas antiheladas y riego por aspersión para mitigar los posibles daños. Se espera que las temperaturas más bajas se registren durante la madrugada del próximo jueves.'
+  },
+  {
+    id: 'news-2',
+    title: 'La demanda de papa Spunta se dispara por promociones en cadenas de supermercados',
+    date: yesterday.toISOString(),
+    source: 'Cámara de Supermercadistas',
+    summary: 'Las principales cadenas de supermercados han lanzado fuertes campañas de promoción para la papa, lo que ha incrementado su demanda en el mercado mayorista.',
+    content: 'En un esfuerzo por atraer clientes, varias cadenas de supermercados han reducido el precio al consumidor de la papa de variedad Spunta. Esta estrategia ha generado un aumento significativo en los pedidos a los distribuidores del Mercado Cooperativo.\n\nSe espera que esta tendencia continúe durante las próximas dos semanas, lo que podría generar un ajuste al alza en el precio por cajón si la oferta no logra satisfacer la demanda creciente.'
+  }
 ];
