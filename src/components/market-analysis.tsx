@@ -195,7 +195,7 @@ export function MarketAnalysis({ stalls }: { stalls: Stall[] }) {
             <CardHeader>
                 <CardTitle className="text-green-300">Resumen del Mercado</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="p-4 bg-black rounded-md border border-green-900 space-y-2">
                     <p className="text-sm text-green-500 font-bold mb-2">Lo más vendido (semanal)</p>
                     {marketCommentary.mostSold.map((item, i) => (
