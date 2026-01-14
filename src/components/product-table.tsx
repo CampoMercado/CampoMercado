@@ -12,8 +12,6 @@ import {
 import { Product } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ArrowDown, ArrowUp } from 'lucide-react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { PriceChart } from './price-chart';
 import { Dialog, DialogContent } from './ui/dialog';
 
@@ -30,18 +28,15 @@ export function ProductTable({ products }: { products: Product[] }) {
 
   return (
     <>
-      <div className="border border-border rounded-lg bg-card font-mono overflow-hidden">
+      <div className="border border-green-800 rounded-lg bg-black font-mono overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="border-border hover:bg-card">
-              <TableHead className="w-[150px]">PRODUCTO</TableHead>
-              <TableHead>CATEGORÍA</TableHead>
-              <TableHead className="text-right">PRECIO ACTUAL</TableHead>
-              <TableHead className="text-right">CAMBIO (24H)</TableHead>
-              <TableHead className="text-right hidden md:table-cell">
-                HISTORIAL RECIENTE
-              </TableHead>
-              <TableHead className="text-right hidden lg:table-cell">GRÁFICO (5D)</TableHead>
+            <TableRow className="border-green-800 hover:bg-gray-900">
+              <TableHead className="w-[150px] text-green-300">PRODUCTO</TableHead>
+              <TableHead className="text-green-300 hidden md:table-cell">VARIEDAD</TableHead>
+              <TableHead className="text-right text-green-300">PRECIO ACTUAL</TableHead>
+              <TableHead className="text-right text-green-300">CAMBIO (24H)</TableHead>
+              <TableHead className="text-right hidden lg:table-cell text-green-300">GRÁFICO (5D)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -58,24 +53,22 @@ export function ProductTable({ products }: { products: Product[] }) {
               const isUp = change > 0;
               const isDown = change < 0;
 
-              const recentHistory = product.priceHistory.slice(-5).reverse();
-
               return (
                 <TableRow
                   key={product.id}
-                  className="cursor-pointer border-border hover:bg-muted/50"
+                  className="cursor-pointer border-green-900 hover:bg-green-900/20"
                   onClick={() => handleOpenChart(product)}
                 >
-                  <TableCell className="font-bold text-foreground">{product.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{product.category}</TableCell>
-                  <TableCell className="text-right font-medium text-foreground text-lg">
+                  <TableCell className="font-bold text-green-400">{product.name}</TableCell>
+                   <TableCell className="text-green-500 hidden md:table-cell">{product.variety}</TableCell>
+                  <TableCell className="text-right font-medium text-green-200 text-lg">
                     ${currentPrice.toLocaleString()}
                   </TableCell>
                   <TableCell
                     className={cn(
                       'text-right font-medium',
-                      isUp && 'text-success',
-                      isDown && 'text-danger'
+                      isUp && 'text-green-500',
+                      isDown && 'text-red-500'
                     )}
                   >
                     <div className="flex items-center justify-end gap-2">
@@ -84,15 +77,6 @@ export function ProductTable({ products }: { products: Product[] }) {
                       {isDown && <ArrowDown size={16} />}
                     </div>
                   </TableCell>
-                  <TableHead className="text-right hidden md:table-cell">
-                    <div className="flex justify-end gap-2 items-center">
-                      {recentHistory.map((p, i) => (
-                        <span key={i} className={cn("text-xs", i === 0 ? "text-foreground" : "text-muted-foreground")}>
-                            ${p.price.toLocaleString()}
-                        </span>
-                      ))}
-                    </div>
-                  </TableHead>
                   <TableCell className="hidden lg:table-cell">
                       <div className="flex justify-end">
                         <PriceChart product={product} simple />
@@ -108,7 +92,7 @@ export function ProductTable({ products }: { products: Product[] }) {
         open={!!selectedProduct}
         onOpenChange={(isOpen) => !isOpen && handleCloseChart()}
       >
-        <DialogContent className="max-w-2xl p-0 border-accent bg-background">
+        <DialogContent className="max-w-2xl p-0 border-green-500 bg-black">
           {selectedProduct && <PriceChart product={selectedProduct} />}
         </DialogContent>
       </Dialog>

@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Apple, Grape, PlusCircle, TriangleAlert } from 'lucide-react';
+import { PlusCircle, TriangleAlert } from 'lucide-react';
 
-import { mockProducts } from '@/lib/data.tsx';
-import type { Product, PriceHistory } from '@/lib/types';
+import { mockStalls } from '@/lib/data.tsx';
+import type { Stall, Product, PriceHistory } from '@/lib/types';
 import { validatePriceAction } from './actions';
 import { UpdatePriceRow } from '@/components/admin/update-price-row';
 
@@ -35,33 +35,25 @@ import {
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import React from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const newProductSchema = z.object({
+  stallId: z.string().min(1, 'Debe seleccionar un puesto.'),
   name: z.string().min(1, 'El nombre es requerido.'),
-  category: z.string().min(1, 'La categoría es requerida.'),
+  variety: z.string().min(1, 'La variedad es requerida.'),
   price: z.coerce.number().positive('El precio inicial debe ser positivo.'),
 });
 
 type NewProductFormData = z.infer<typeof newProductSchema>;
 
-// Custom icons - repeating from data.ts for use here. A better way would be a shared icon registry.
-const TomatoIcon = (props: { className?: string }) => (<svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4 4 0 0 0-3.3 2.5A4 4 0 0 0 5.3 8c0 2.2 1.8 4 4 4h5.4a4 4 0 0 0 3.3-6.5A4 4 0 0 0 12 2z"/><path d="M12 14c-2.2 0-4 1.8-4 4v2c0 1.1.9 2 2 2h4c1.1 0 2-.9 2-2v-2c0-2.2-1.8-4-4-4z"/></svg>);
-const PotatoIcon = (props: { className?: string }) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15.3 10.7a3.5 3.5 0 1 1-5.1-4.8 3.5 3.5 0 0 1 5.1 4.8z"/><path d="m11.4 11.4-.5 2.1-2.1.5-3.3 3.3a2 2 0 0 0 2.8 2.8l3.3-3.3.5-2.1 2.1-.5 2.5-2.5a6.5 6.5 0 1 0-9.2-9.2L2.4 9.1a2 2 0 0 0 2.8 2.8l2.9-2.9"/></svg>);
-const LettuceIcon = (props: { className?: string }) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5a2.5 2.5 0 0 0-2.5-2.5h-11A2.5 2.5 0 0 0 4 7.5Z"/><path d="M4 14v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>);
-const OnionIcon = (props: { className?: string }) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2a8 8 0 0 0-3 15.2V21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-5.8A8 8 0 0 0 13 2z"></path><path d="M13 2c0 1.33.67 2 2 2s2-.67 2-2"></path></svg>);
-
-const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
-  Tomate: TomatoIcon,
-  Papa: PotatoIcon,
-  Manzana: Apple,
-  Lechuga: LettuceIcon,
-  Cebolla: OnionIcon,
-  Uva: Grape,
-};
-
 export default function AdminPage() {
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [stalls, setStalls] = useState<Stall[]>(mockStalls);
   const [validationAlert, setValidationAlert] = useState<{
     open: boolean;
     reason: string;
@@ -76,17 +68,28 @@ export default function AdminPage() {
     resolver: zodResolver(newProductSchema),
   });
 
-  const updateProductPrice = (productId: string, newPrice: number) => {
-    setProducts((prevProducts) =>
-      prevProducts.map((p) => {
-        if (p.id === productId) {
-          const newPriceHistory: PriceHistory = {
-            date: new Date().toISOString(),
-            price: newPrice,
+  const updateProductPrice = (stallId: string, productId: string, newPrice: number) => {
+    setStalls((prevStalls) =>
+      prevStalls.map((stall) => {
+        if (stall.id === stallId) {
+          return {
+            ...stall,
+            products: stall.products.map((p) => {
+              if (p.id === productId) {
+                const newPriceHistory: PriceHistory = {
+                  date: new Date().toISOString(),
+                  price: newPrice,
+                };
+                return {
+                  ...p,
+                  priceHistory: [...p.priceHistory, newPriceHistory],
+                };
+              }
+              return p;
+            }),
           };
-          return { ...p, priceHistory: [...p.priceHistory, newPriceHistory] };
         }
-        return p;
+        return stall;
       })
     );
     toast({
@@ -96,10 +99,12 @@ export default function AdminPage() {
     setUpdatingProductId(null);
   };
 
-  const handlePriceUpdate = async (productId: string, newPrice: number) => {
+  const handlePriceUpdate = async (stallId: string, productId: string, newPrice: number) => {
     setUpdatingProductId(productId);
-    const product = products.find((p) => p.id === productId);
-    if (!product) {
+    const stall = stalls.find((s) => s.id === stallId);
+    const product = stall?.products.find((p) => p.id === productId);
+
+    if (!product || !stall) {
       setUpdatingProductId(null);
       return;
     }
@@ -107,19 +112,19 @@ export default function AdminPage() {
     const currentPrice = product.priceHistory.at(-1)?.price;
 
     const validationResult = await validatePriceAction({
-      produceName: product.name,
+      produceName: `${product.name} ${product.variety}`,
       price: newPrice,
       previousPrice: currentPrice,
     });
 
     if (validationResult.isValid) {
-      updateProductPrice(productId, newPrice);
+      updateProductPrice(stallId, productId, newPrice);
     } else {
       setValidationAlert({
         open: true,
         reason: validationResult.reason || 'El precio parece inusual.',
         onConfirm: () => {
-          updateProductPrice(productId, newPrice);
+          updateProductPrice(stallId, productId, newPrice);
           setValidationAlert(null);
         },
       });
@@ -128,23 +133,37 @@ export default function AdminPage() {
 
   const handleAddNewProduct = (data: NewProductFormData) => {
     const newProduct: Product = {
-      id: (products.length + 1).toString(),
+      id: `${data.stallId}-${data.name}-${Math.random()}`,
       name: data.name,
-      category: data.category,
-      icon: iconMap[data.name],
-      imageId: data.name.toLowerCase().replace(' ', ''), // simple mapping for mock
+      variety: data.variety,
       priceHistory: [{ date: new Date().toISOString(), price: data.price }],
     };
-    setProducts((prev) => [...prev, newProduct]);
+
+    setStalls((prev) =>
+      prev.map((stall) => {
+        if (stall.id === data.stallId) {
+          return { ...stall, products: [...stall.products, newProduct] };
+        }
+        return stall;
+      })
+    );
+
     toast({
       title: 'Producto Agregado',
-      description: `Se ha agregado "${data.name}" a la lista.`,
+      description: `Se ha agregado "${data.name} (${data.variety})" al puesto.`,
     });
     newProductForm.reset();
   };
   
-  const handleDeleteProduct = (productId: string) => {
-    setProducts(prev => prev.filter(p => p.id !== productId));
+  const handleDeleteProduct = (stallId: string, productId: string) => {
+     setStalls((prev) =>
+      prev.map((stall) => {
+        if (stall.id === stallId) {
+          return { ...stall, products: stall.products.filter(p => p.id !== productId) };
+        }
+        return stall;
+      })
+    );
     toast({
         title: "Producto Eliminado",
         variant: "destructive"
@@ -159,38 +178,42 @@ export default function AdminPage() {
           <TabsTrigger value="add">Agregar Producto</TabsTrigger>
         </TabsList>
         <TabsContent value="update">
-          <Card>
-            <CardHeader>
-              <CardTitle>Listado de Productos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <UpdatePriceRow isHeader />
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {products.map((product) => (
-                      <UpdatePriceRow
-                        key={product.id}
-                        product={product}
-                        onUpdate={handlePriceUpdate}
-                        isUpdating={updatingProductId === product.id}
-                        onDelete={handleDeleteProduct}
-                      />
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-8">
+            {stalls.map(stall => (
+              <Card key={stall.id}>
+                <CardHeader>
+                  <CardTitle>Puesto {stall.number} - {stall.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <UpdatePriceRow isHeader />
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {stall.products.map((product) => (
+                          <UpdatePriceRow
+                            key={product.id}
+                            product={product}
+                            onUpdate={(productId, newPrice) => handlePriceUpdate(stall.id, productId, newPrice)}
+                            isUpdating={updatingProductId === product.id}
+                            onDelete={(productId) => handleDeleteProduct(stall.id, productId)}
+                          />
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </TabsContent>
         <TabsContent value="add">
           <Card className="max-w-2xl">
             <CardHeader>
-              <CardTitle>Agregar Nuevo Producto</CardTitle>
+              <CardTitle>Agregar Nuevo Producto a un Puesto</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...newProductForm}>
@@ -200,25 +223,49 @@ export default function AdminPage() {
                 >
                   <FormField
                     control={newProductForm.control}
-                    name="name"
+                    name="stallId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre del Producto</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ej: Tomate Redondo" {...field} />
-                        </FormControl>
+                        <FormLabel>Puesto</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccione un puesto" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {stalls.map(stall => (
+                              <SelectItem key={stall.id} value={stall.id}>
+                                Puesto {stall.number} - {stall.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <FormField
                     control={newProductForm.control}
-                    name="category"
+                    name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Categoría</FormLabel>
+                        <FormLabel>Nombre del Producto</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ej: Frutas, Verduras" {...field} />
+                          <Input placeholder="Ej: Tomate" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={newProductForm.control}
+                    name="variety"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Variedad</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: Redondo" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

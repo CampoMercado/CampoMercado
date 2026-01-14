@@ -6,7 +6,13 @@ export type PriceHistory = {
 export type Product = {
   id: string;
   name: string;
-  category: string;
+  variety: string;
   priceHistory: PriceHistory[];
-  imageId: string;
+};
+
+export type Stall = {
+  id: string;
+  name: string;
+  number: number;
+  products: Product[];
 };

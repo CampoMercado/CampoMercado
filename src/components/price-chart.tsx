@@ -21,7 +21,7 @@ import {
 const chartConfig = {
   price: {
     label: 'Precio',
-    color: 'hsl(var(--primary))',
+    color: 'hsl(140 80% 50%)',
   },
 } satisfies ChartConfig;
 
@@ -30,6 +30,8 @@ export function PriceChart({ product, simple = false }: { product: Product, simp
     date: new Date(item.date),
     price: item.price,
   }));
+  
+  const title = `${product.name} (${product.variety})`
 
   if (simple) {
      return (
@@ -66,24 +68,23 @@ export function PriceChart({ product, simple = false }: { product: Product, simp
   }
 
   return (
-    <div className="p-4 bg-card rounded-lg">
+    <div className="p-4 bg-black rounded-lg text-green-400">
       <div className="mb-4">
-        <h3 className="font-headline text-2xl">{product.name}</h3>
-        <p className="text-sm text-muted-foreground">{product.category}</p>
+        <h3 className="font-headline text-2xl text-green-200">{title}</h3>
       </div>
       <ChartContainer config={chartConfig} className="h-[250px] w-full">
         <AreaChart
           data={chartData}
           margin={{ left: 0, right: 16, top: 10, bottom: 0 }}
         >
-          <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)"/>
+          <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="hsl(140 80% 50% / 0.2)"/>
           <XAxis
             dataKey="date"
             tickLine={false}
             axisLine={false}
             tickMargin={8}
             tickFormatter={(value) => format(value, 'dd MMM', { locale: es })}
-            style={{ fill: 'hsl(var(--foreground))', fontSize: '0.75rem' }}
+            style={{ fill: 'hsl(140 40% 80%)', fontSize: '0.75rem' }}
           />
           <YAxis
             tickLine={false}
@@ -91,12 +92,12 @@ export function PriceChart({ product, simple = false }: { product: Product, simp
             tickMargin={8}
             tickFormatter={(value) => `$${Number(value).toLocaleString()}`}
             domain={['dataMin - 100', 'dataMax + 100']}
-            style={{ fill: 'hsl(var(--foreground))', fontSize: '0.75rem' }}
+            style={{ fill: 'hsl(140 40% 80%)', fontSize: '0.75rem' }}
 
           />
           <Tooltip
-            cursor={{ stroke: 'hsl(var(--accent))', strokeWidth: 1, strokeDasharray: '3 3' }}
-            content={<ChartTooltipContent indicator="dot" />}
+            cursor={{ stroke: 'hsl(50 100% 60%)', strokeWidth: 1, strokeDasharray: '3 3' }}
+            content={<ChartTooltipContent indicator="dot" contentStyle={{backgroundColor: 'black', border: '1px solid hsl(140 80% 50%)'}}/>}
           />
           <defs>
             <linearGradient id="fillPrice" x1="0" y1="0" x2="0" y2="1">
