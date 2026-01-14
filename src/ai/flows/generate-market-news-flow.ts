@@ -20,15 +20,15 @@ const NewsArticleSchema = z.object({
   content: z.string().describe('The full content of the news article, summarized by the AI, in Spanish and in Markdown format.'),
 });
 
+export type MarketNewsInput = z.infer<typeof MarketNewsInputSchema>;
 const MarketNewsInputSchema = z.object({
   query: z.string().describe('The search query for agricultural news.'),
 });
-export type MarketNewsInput = z.infer<typeof MarketNewsInputSchema>;
 
+export type MarketNewsOutput = z.infer<typeof MarketNewsOutputSchema>;
 const MarketNewsOutputSchema = z.object({
   articles: z.array(NewsArticleSchema),
 });
-export type MarketNewsOutput = z.infer<typeof MarketNewsOutputSchema>;
 
 
 export async function generateMarketNews(input: MarketNewsInput): Promise<MarketNewsOutput> {
@@ -38,6 +38,8 @@ export async function generateMarketNews(input: MarketNewsInput): Promise<Market
 const newsGenerationPrompt = ai.definePrompt({
   name: 'newsGenerationPrompt',
   tools: [search],
+  input: { schema: MarketNewsInputSchema },
+  output: { schema: MarketNewsOutputSchema },
   prompt: `You are an expert agricultural market analyst.
 Your task is to analyze the latest news based on the user's query and generate a valid JSON response.
 You MUST use the provided search tool to gather real-time, up-to-date information from the web.
@@ -50,12 +52,8 @@ For each article, you must provide:
 - The source (the URL of the original article).
 - A detailed summary of the content in Spanish and Markdown format.
 
-Your final output must be ONLY the JSON object that conforms to the following schema.
-{{outputJson}}
+Your final output must be ONLY the JSON object that conforms to the schema.
 `,
-  output: {
-    schema: MarketNewsOutputSchema,
-  },
 });
 
 const generateMarketNewsFlow = ai.defineFlow(
