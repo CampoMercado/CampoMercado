@@ -86,6 +86,8 @@ For each article, you must provide a title, a source (the URL of the article), a
 The content should be written in Spanish, in a professional and objective tone.
 The date should be today's date.
 Generate a unique ID for each article.
+
+Output in JSON format: {{{{outputJson}}}}
 `,
   output: {
     schema: MarketNewsOutputSchema,
