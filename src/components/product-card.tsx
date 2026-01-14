@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { TableRow, TableCell } from '@/components/ui/table';
 import { PriceChart } from './price-chart';
 import type { Product } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, BarChart2 } from 'lucide-react';
 
 export function ProductCard({ product }: { product: Product }) {
   const [isChartOpen, setChartOpen] = useState(false);
@@ -24,36 +26,51 @@ export function ProductCard({ product }: { product: Product }) {
 
   return (
     <>
-      <div
-        className="bg-gray-900/50 border border-green-900 rounded-md p-4 flex flex-col justify-between hover:bg-green-900/20 hover:border-green-700 cursor-pointer transition-colors"
-        onClick={() => setChartOpen(true)}
+      <TableRow 
+        className="border-green-900 font-mono"
       >
-        <div>
-          <div className="flex justify-between items-start">
+        <TableCell className="w-[200px]">
+          <div className="font-bold text-base text-green-300">{product.name}</div>
+          <div className="text-xs text-green-500">{product.variety}</div>
+        </TableCell>
+        <TableCell className="text-right">
+          <span className="text-2xl font-bold text-green-200">
+            ${currentPrice.toLocaleString()}
+          </span>
+        </TableCell>
+        <TableCell className="text-right w-[150px]">
+          <div
+            className={cn(
+              'flex items-center justify-end gap-2 text-base font-medium',
+              isUp && 'text-success',
+              isDown && 'text-danger'
+            )}
+          >
+            {isUp ? <ArrowUp size={16} /> : <ArrowDown size={16} />}
             <div>
-              <h3 className="font-bold text-lg text-green-300">{product.name}</h3>
-              <p className="text-sm text-green-500">{product.variety}</p>
-            </div>
-            <div
-              className={cn(
-                'flex items-center gap-1 text-sm font-medium',
-                isUp && 'text-success',
-                isDown && 'text-danger'
-              )}
-            >
-              {isUp && <ArrowUp size={14} />}
-              {isDown && <ArrowDown size={14} />}
-              <span>{changePercent.toFixed(1)}%</span>
+                <div>{changePercent.toFixed(2)}%</div>
+                <div className='text-xs'>${change.toLocaleString()}</div>
             </div>
           </div>
-          <div className="mt-4">
-            <span className="text-3xl font-bold text-green-200">${currentPrice.toLocaleString()}</span>
+        </TableCell>
+        <TableCell className="w-[150px]">
+          <div className="mx-auto">
+            <PriceChart product={product} simple />
           </div>
-        </div>
-        <div className="mt-4 h-[50px]">
-          <PriceChart product={product} simple />
-        </div>
-      </div>
+        </TableCell>
+        <TableCell className="text-right">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setChartOpen(true)}
+            className="text-green-400 hover:bg-green-900 hover:text-green-200"
+          >
+            <BarChart2 className="mr-2 h-4 w-4" />
+            Gráfico
+          </Button>
+        </TableCell>
+      </TableRow>
+
       <Dialog open={isChartOpen} onOpenChange={setChartOpen}>
         <DialogContent className="max-w-2xl p-0 border-green-500 bg-black">
           <PriceChart product={product} />
