@@ -7,12 +7,17 @@ import { Header } from '@/components/header';
 import { PriceTicker } from '@/components/price-ticker';
 import { StallsDisplay } from '@/components/stalls-display';
 import { MarketAnalysis } from '@/components/market-analysis';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Home() {
   const [stalls, setStalls] = useState<Stall[]>(mockStalls);
 
-  const allProducts = stalls.flatMap(stall => 
-    stall.products.map(p => ({...p, stallName: stall.name, stallNumber: stall.number}))
+  const allProducts = stalls.flatMap(stall =>
+    stall.products.map(p => ({
+      ...p,
+      stallName: stall.name,
+      stallNumber: stall.number,
+    }))
   );
 
   return (
@@ -29,17 +34,19 @@ export default function Home() {
             MERCADO COOPERATIVO DE GUAYMALLÉN
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-8">
-          <div className="lg:col-span-2">
+
+        <Tabs defaultValue="market">
+          <TabsList className="mb-4">
+            <TabsTrigger value="market">Mercado Diario</TabsTrigger>
+            <TabsTrigger value="analysis">Análisis de Mercado</TabsTrigger>
+          </TabsList>
+          <TabsContent value="market">
             <StallsDisplay stalls={stalls} />
-          </div>
-          <div className="mt-8 lg:mt-0">
-             <div className="sticky top-[80px]">
-                <MarketAnalysis stalls={stalls} />
-            </div>
-          </div>
-        </div>
+          </TabsContent>
+          <TabsContent value="analysis">
+            <MarketAnalysis stalls={stalls} />
+          </TabsContent>
+        </Tabs>
       </main>
 
       <footer className="container py-6 text-center text-green-600 text-xs">
