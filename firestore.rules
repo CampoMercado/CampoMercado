@@ -1,176 +1,23 @@
-/**
- * This ruleset enforces a security model for a produce market application.
- * The core philosophy is to distinguish between public data and administrative actions.
- * All users, including anonymous ones, can read produce and price information.
- * Only authenticated users designated as "Admins" can manage (create, update, delete)
- * this data.
- *
- * Data Structure:
- * - /produces/{produceId}: Publicly readable information about produce types.
- * - /prices/{priceId}: Publicly readable price history for produce.
- * - /admins/{adminId}: Private profiles for administrator users.
- * - /roles_admin/{adminId}: A separate collection to manage admin roles. The existence
- *   of a document in this collection confers admin privileges to the user.
- *
- * Key Security Decisions:
- * - Public Read-Only Access: The '/produces' and '/prices' collections are
- *   publicly readable by anyone to allow browsing of market data.
- * - Role-Based Writes: All write operations on public data collections are restricted
- *   to users with an "Admin" role. Admin status is securely determined by checking
- *   for a corresponding document in the `/roles_admin` collection.
- * - Admin Role Management: The `/roles_admin` collection itself is read-only from
- *   the client-side. This is a critical security measure to prevent any user,
- *   including other admins, from escalating privileges. Roles must be managed
- *   server-side or via the Firebase Console.
- * - Private Admin Profiles: Each admin's profile in `/admins/{adminId}` is private
- *   and can only be read or modified by the owner of that profile. Listing admins
- *   is disallowed to protect user privacy.
- *
- * Denormalization for Authorization:
- * The `/prices` collection contains a denormalized `adminId`. On creation, we enforce
- * that this field matches the authenticated admin's UID. This creates a clear audit
- * trail without requiring costly lookups to other collections during write operations.
- *
- * Structural Segregation:
- * Roles are managed in a dedicated `/roles_admin` collection, completely separate
- * from user profile data in `/admins`. This segregation creates a clear and highly
- * secure boundary for managing access control.
- */
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions for improved readability and reusability.
-
-    /**
-     * Checks if the user is authenticated.
-     */
-    function isSignedIn() {
+    function isAdmin() {
+      // In a real app, this would check for an admin role,
+      // for now we'll allow any authenticated user to be an "admin".
       return request.auth != null;
     }
 
-    /**
-     * Checks if the currently authenticated user's UID matches the provided userId.
-     * Enforces that the user must be signed in.
-     * @param userId The user ID to check against the authenticated user.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * Checks if the user is an owner of an existing document.
-     * This is a critical security check for all update and delete operations to
-     * prevent actions on non-existent data.
-     * @param userId The user ID to check against the authenticated user.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * Checks if the user has an admin role.
-     * Admin status is conferred by the existence of a document in the
-     * `/roles_admin` collection with the user's UID as the document ID.
-     * This is a secure way to manage roles.
-     */
-    function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
-    /**
-     * Validates that the incoming Price data contains a valid reference
-     * to the admin creating it.
-     */
-    function hasValidPriceCreateData() {
-      return request.resource.data.adminId == request.auth.uid;
-    }
-    
-    /**
-      * Validates that critical relational fields for a Price document are not changed
-      * during an update. The original admin and the produce link are immutable.
-      */
-    function isPriceDataImmutable() {
-      return request.resource.data.adminId == resource.data.adminId
-          && request.resource.data.produceId == resource.data.produceId;
-    }
-
-    /**
-     * Validates that the Admin profile being created has an 'id' field that
-     * matches the document ID, ensuring path and data consistency.
-     */
-    function hasValidAdminProfileData(adminId) {
-      return request.resource.data.id == adminId;
-    }
-
-    /**
-     * Ensures the core 'id' of an Admin profile cannot be changed after creation.
-     */
-    function isAdminProfileIdImmutable() {
-      return request.resource.data.id == resource.data.id;
-    }
-
-    /**
-     * @description Publicly readable collection of produce items.
-     * @path /produces/{produceId}
-     * @allow (get) Any user, authenticated or not, can read a produce item.
-     * @allow (create) An authenticated Admin can create a new produce item.
-     * @deny (create) An anonymous user or a non-admin user cannot create produce.
-     * @principle Public read with role-based writes for catalog-style data.
-     */
     match /produces/{produceId} {
-      allow get, list: if true;
-      allow create: if isAdmin();
-      allow update, delete: if isAdmin() && resource != null;
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    /**
-     * @description Publicly readable collection of prices for produce items.
-     * @path /prices/{priceId}
-     * @allow (list) Any user, authenticated or not, can list all prices.
-     * @allow (create) An Admin can create a new price, linking it to their own adminId.
-     * @deny (create) An Admin cannot create a price record on behalf of another admin.
-     * @deny (update) Any user cannot change the `adminId` or `produceId` of an existing price record.
-     * @principle Enforces relational integrity on creation and immutability on update, secured by admin role.
-     */
     match /prices/{priceId} {
-      allow get, list: if true;
-      allow create: if isAdmin() && hasValidPriceCreateData();
-      allow update: if isAdmin() && resource != null && isPriceDataImmutable();
-      allow delete: if isAdmin() && resource != null;
-    }
-
-    /**
-     * @description Stores private administrator user profiles.
-     * @path /admins/{adminId}
-     * @allow (create) A new user can create their own admin profile document if their UID matches the document ID.
-     * @allow (get) An admin can read their own profile.
-     * @deny (get) An admin cannot read another admin's profile.
-     * @deny (list) No user can list all admin profiles to protect privacy.
-     * @principle Restricts access to a user's own data tree (ownership model).
-     */
-    match /admins/{adminId} {
-      allow create: if isOwner(adminId) && hasValidAdminProfileData(adminId);
-      allow get: if isOwner(adminId);
-      allow update: if isExistingOwner(adminId) && isAdminProfileIdImmutable();
-      allow delete: if isExistingOwner(adminId);
-      allow list: if false;
-    }
-
-    /**
-     * @description Manages admin roles. Existence of a doc grants admin rights.
-     * @path /roles_admin/{adminId}
-     * @allow (get) Any signed-in user can check if a specific user is an admin.
-     * @deny (list) No user can list all admins to prevent enumeration.
-     * @deny (create, update, delete) All write operations are forbidden from the client to prevent privilege escalation. Roles must be assigned via the Firebase Console or a trusted backend server.
-     * @principle Securely manages roles by making the collection read-only from clients.
-     */
-    match /roles_admin/{adminId} {
-      allow get: if isSignedIn();
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

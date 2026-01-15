@@ -6,13 +6,13 @@ import { es } from 'date-fns/locale';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { PriceChart } from './price-chart';
-import type { Product, TickerProduct, PriceHistory } from '@/lib/types';
+import type { AggregatedProduct } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
 type ProductCardProps = {
-  product: Product;
-  marketProducts: TickerProduct[];
+  product: AggregatedProduct;
+  marketProducts: AggregatedProduct[];
   marketOpen: boolean;
   isHighlighted?: boolean;
 };
@@ -23,10 +23,10 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
   const productAnalysis = useMemo(() => {
     if (product.priceHistory.length === 0) return null;
 
-    const currentPriceData = product.priceHistory.at(-1)!;
+    const currentPriceData = product.priceHistory.at(0)!;
     const currentPrice = currentPriceData.price;
     
-    const prevPriceData = product.priceHistory.at(-2);
+    const prevPriceData = product.priceHistory.at(1);
     const prevPrice = prevPriceData?.price ?? currentPrice;
 
     const change = currentPrice - prevPrice;
@@ -36,7 +36,7 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
 
     const relevantMarketPrices = marketProducts
       .filter(p => p.name === product.name && p.variety === product.variety)
-      .map(p => p.priceHistory.at(-1)?.price ?? 0)
+      .map(p => p.priceHistory.at(0)?.price ?? 0)
       .filter(price => price > 0);
 
     const marketMin = relevantMarketPrices.length > 0 ? Math.min(...relevantMarketPrices) : 0;

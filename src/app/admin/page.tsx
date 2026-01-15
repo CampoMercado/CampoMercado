@@ -5,11 +5,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PlusCircle, TriangleAlert } from 'lucide-react';
+import { collection, doc, writeBatch, serverTimestamp, where, query } from 'firebase/firestore';
 
-import { mockStalls } from '@/lib/data.tsx';
-import type { Stall, Product, PriceHistory } from '@/lib/types';
 import { validatePriceAction } from './actions';
 import { UpdatePriceRow } from '@/components/admin/update-price-row';
+import {
+  useCollection,
+  useFirestore,
+  useMemoFirebase,
+  addDocumentNonBlocking,
+  deleteDocumentNonBlocking,
+} from '@/firebase';
+import type { Produce, Price, AggregatedProduct } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,7 +42,6 @@ import {
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 
 const newProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido.'),
@@ -46,10 +52,16 @@ const newProductSchema = z.object({
 
 type NewProductFormData = z.infer<typeof newProductSchema>;
 
-const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 export default function AdminPage() {
-  const [stalls, setStalls] = useState<Stall[]>(mockStalls);
+  const firestore = useFirestore();
+  const producesRef = useMemoFirebase(() => collection(firestore, 'produces'), [firestore]);
+  const pricesRef = useMemoFirebase(() => collection(firestore, 'prices'), [firestore]);
+  
+  const { data: producesData, isLoading: isLoadingProduces } = useCollection<Produce>(producesRef);
+  const { data: pricesData, isLoading: isLoadingPrices } = useCollection<Price>(pricesRef);
+
   const [validationAlert, setValidationAlert] = useState<{
     open: boolean;
     reason: string;
@@ -61,19 +73,35 @@ export default function AdminPage() {
   const { toast } = useToast();
   const [activeLetter, setActiveLetter] = useState<string | null>(null);
 
-  const allProducts = useMemo(() => {
-      return stalls.flatMap(stall => 
-          stall.products.map(product => ({...product, stallId: stall.id}))
-      ).sort((a, b) => a.name.localeCompare(b.name));
-  }, [stalls]);
-  
+  const aggregatedProducts = useMemo((): AggregatedProduct[] => {
+    if (!producesData || !pricesData) {
+      return [];
+    }
+
+    const pricesByProduceId = pricesData.reduce((acc, price) => {
+      if (!acc[price.produceId]) {
+        acc[price.produceId] = [];
+      }
+      acc[price.produceId].push({ date: price.date, price: price.price });
+      return acc;
+    }, {} as Record<string, { date: string; price: number }[]>);
+
+    return producesData.map((produce) => ({
+      ...produce,
+      priceHistory: (pricesByProduceId[produce.id] || []).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      ),
+    })).sort((a,b) => a.name.localeCompare(b.name));
+  }, [producesData, pricesData]);
+
   const filteredProducts = useMemo(() => {
     if (!activeLetter) {
-      return allProducts;
+      return aggregatedProducts;
     }
-    return allProducts.filter(p => p.name.toUpperCase().startsWith(activeLetter));
-  }, [allProducts, activeLetter]);
-
+    return aggregatedProducts.filter((p) =>
+      p.name.toUpperCase().startsWith(activeLetter)
+    );
+  }, [aggregatedProducts, activeLetter]);
 
   const newProductForm = useForm<NewProductFormData>({
     resolver: zodResolver(newProductSchema),
@@ -82,33 +110,17 @@ export default function AdminPage() {
       variety: '',
       category: '',
       price: undefined,
-    }
+    },
   });
 
-  const updateProductPrice = (stallId: string, productId: string, newPrice: number) => {
-    setStalls((prevStalls) =>
-      prevStalls.map((stall) => {
-        if (stall.id === stallId) {
-          return {
-            ...stall,
-            products: stall.products.map((p) => {
-              if (p.id === productId) {
-                const newPriceHistory: PriceHistory = {
-                  date: new Date().toISOString(),
-                  price: newPrice,
-                };
-                return {
-                  ...p,
-                  priceHistory: [...p.priceHistory, newPriceHistory],
-                };
-              }
-              return p;
-            }),
-          };
-        }
-        return stall;
-      })
-    );
+  const updateProductPrice = (productId: string, newPrice: number) => {
+    const newPriceEntry = {
+      produceId: productId,
+      price: newPrice,
+      date: new Date().toISOString(),
+    };
+    addDocumentNonBlocking(pricesRef, newPriceEntry);
+    
     toast({
       title: 'Precio Actualizado',
       description: `El precio se ha actualizado a $${newPrice.toLocaleString()}.`,
@@ -118,14 +130,14 @@ export default function AdminPage() {
 
   const handlePriceUpdate = async (productId: string, newPrice: number) => {
     setUpdatingProductId(productId);
-    const productWithStall = allProducts.find(p => p.id === productId);
+    const product = aggregatedProducts.find((p) => p.id === productId);
 
-    if (!productWithStall) {
+    if (!product) {
       setUpdatingProductId(null);
       return;
     }
-    const { stallId, ...product } = productWithStall;
-    const currentPrice = product.priceHistory.at(-1)?.price;
+    
+    const currentPrice = product.priceHistory.at(0)?.price;
 
     const validationResult = await validatePriceAction({
       produceName: `${product.name} ${product.variety}`,
@@ -134,13 +146,13 @@ export default function AdminPage() {
     });
 
     if (validationResult.isValid) {
-      updateProductPrice(stallId, productId, newPrice);
+      updateProductPrice(productId, newPrice);
     } else {
       setValidationAlert({
         open: true,
         reason: validationResult.reason || 'El precio parece inusual.',
         onConfirm: () => {
-          updateProductPrice(stallId, productId, newPrice);
+          updateProductPrice(productId, newPrice);
           setValidationAlert(null);
         },
       });
@@ -148,28 +160,22 @@ export default function AdminPage() {
   };
 
   const handleAddNewProduct = (data: NewProductFormData) => {
-    const targetStallId = stalls[0]?.id;
-    if (!targetStallId) {
-        toast({ title: 'Error', description: 'No hay puestos para agregar productos.', variant: 'destructive'});
-        return;
-    }
-
-    const newProduct: Product = {
-      id: `prod-${Date.now()}`,
-      name: data.name,
-      variety: data.variety,
-      category: data.category,
-      priceHistory: [{ date: new Date().toISOString(), price: data.price }],
+    const newProduce = {
+        name: data.name,
+        variety: data.variety,
+        category: data.category
     };
 
-    setStalls((prev) =>
-      prev.map((stall) => {
-        if (stall.id === targetStallId) {
-          return { ...stall, products: [...stall.products, newProduct] };
+    addDocumentNonBlocking(producesRef, newProduce).then(docRef => {
+        if(docRef) {
+            const newPriceEntry = {
+                produceId: docRef.id,
+                price: data.price,
+                date: new Date().toISOString(),
+            };
+            addDocumentNonBlocking(pricesRef, newPriceEntry);
         }
-        return stall;
-      })
-    );
+    });
 
     toast({
       title: 'Producto Agregado',
@@ -177,25 +183,34 @@ export default function AdminPage() {
     });
     newProductForm.reset();
   };
-  
-  const handleDeleteProduct = (productId: string) => {
-    const productWithStall = allProducts.find(p => p.id === productId);
-    if (!productWithStall) return;
-    const { stallId } = productWithStall;
 
-     setStalls((prev) =>
-      prev.map((stall) => {
-        if (stall.id === stallId) {
-          return { ...stall, products: stall.products.filter(p => p.id !== productId) };
-        }
-        return stall;
-      })
-    );
-    toast({
-        title: "Producto Eliminado",
-        variant: "destructive"
+  const handleDeleteProduct = async (productId: string) => {
+    
+    // 1. Delete the product document
+    const produceDocRef = doc(firestore, 'produces', productId);
+    deleteDocumentNonBlocking(produceDocRef);
+    
+    // 2. Query and delete all associated prices
+    const pricesToDeleteQuery = query(pricesRef, where('produceId', '==', productId));
+    
+    // This part is tricky with non-blocking. For simplicity here we do it this way.
+    // In a real-world app, this might be a cloud function.
+    const { getDocs } = await import('firebase/firestore');
+    const pricesSnapshot = await getDocs(pricesToDeleteQuery);
+    const batch = writeBatch(firestore);
+    pricesSnapshot.forEach(doc => {
+      batch.delete(doc.ref);
     });
-  }
+    await batch.commit();
+
+    toast({
+      title: 'Producto Eliminado',
+      description: 'El producto y su historial de precios han sido eliminados.',
+      variant: 'destructive',
+    });
+  };
+  
+  const isLoading = isLoadingProduces || isLoadingPrices;
 
   return (
     <>
@@ -205,53 +220,61 @@ export default function AdminPage() {
           <TabsTrigger value="add">Agregar Producto</TabsTrigger>
         </TabsList>
         <TabsContent value="update">
-           <Card>
-                <CardHeader>
-                  <CardTitle>Todos los Productos</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-4 flex flex-wrap gap-1">
-                     <Button
-                        variant={activeLetter === null ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setActiveLetter(null)}
-                      >
-                        Todos
-                      </Button>
-                    {alphabet.map((letter) => (
-                      <Button
-                        key={letter}
-                        variant={activeLetter === letter ? 'default' : 'outline'}
-                        size="sm"
-                        className="w-9"
-                        onClick={() => setActiveLetter(letter)}
-                      >
-                        {letter}
-                      </Button>
-                    ))}
-                  </div>
-                  <div className="overflow-x-auto border rounded-lg">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <UpdatePriceRow isHeader />
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredProducts.map((product) => (
-                          <UpdatePriceRow
-                            key={product.id}
-                            product={product}
-                            onUpdate={handlePriceUpdate}
-                            isUpdating={updatingProductId === product.id}
-                            onDelete={handleDeleteProduct}
-                          />
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Todos los Productos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4 flex flex-wrap gap-1">
+                <Button
+                  variant={activeLetter === null ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setActiveLetter(null)}
+                >
+                  Todos
+                </Button>
+                {alphabet.map((letter) => (
+                  <Button
+                    key={letter}
+                    variant={activeLetter === letter ? 'default' : 'outline'}
+                    size="sm"
+                    className="w-9"
+                    onClick={() => setActiveLetter(letter)}
+                  >
+                    {letter}
+                  </Button>
+                ))}
+              </div>
+              <div className="overflow-x-auto border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <UpdatePriceRow isHeader />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center">
+                          Cargando productos...
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredProducts.map((product) => (
+                        <UpdatePriceRow
+                          key={product.id}
+                          product={product}
+                          onUpdate={handlePriceUpdate}
+                          isUpdating={updatingProductId === product.id}
+                          onDelete={handleDeleteProduct}
+                        />
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         <TabsContent value="add">
           <Card className="max-w-2xl">
@@ -264,7 +287,6 @@ export default function AdminPage() {
                   onSubmit={newProductForm.handleSubmit(handleAddNewProduct)}
                   className="space-y-6"
                 >
-                  
                   <FormField
                     control={newProductForm.control}
                     name="name"
@@ -278,7 +300,7 @@ export default function AdminPage() {
                       </FormItem>
                     )}
                   />
-                   <FormField
+                  <FormField
                     control={newProductForm.control}
                     name="variety"
                     render={({ field }) => (
@@ -298,7 +320,10 @@ export default function AdminPage() {
                       <FormItem>
                         <FormLabel>Categoría</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ej: Hortalizas de Fruto" {...field} />
+                          <Input
+                            placeholder="Ej: Hortalizas de Fruto"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

@@ -12,7 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 
-import type { Product } from '@/lib/types';
+import type { AggregatedProduct } from '@/lib/types';
 import {
   ChartConfig,
   ChartContainer,
@@ -61,7 +61,7 @@ const CustomTooltipComponent = ({ active, payload, label, chartConfig }: any) =>
 const CustomTooltip = memo(CustomTooltipComponent);
 
 
-const BrokerChartComponent = ({ products }: { products: Product[] }) => {
+const BrokerChartComponent = ({ products }: { products: AggregatedProduct[] }) => {
   const [selectedProducts, setSelectedProducts] = useState<string[]>(
     products.slice(0, initialVisibleProducts).map((p) => p.id)
   );

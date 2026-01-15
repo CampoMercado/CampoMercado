@@ -1,170 +1,71 @@
+
 {
   "entities": {
     "Produce": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Produce",
+      "description": "Represents a type of produce (fruit or vegetable).",
       "type": "object",
-      "description": "Represents a type of produce (fruit or vegetable) sold at Mercado Cooperativo de Guaymallén.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the produce item."
-        },
         "name": {
           "type": "string",
           "description": "Name of the produce (e.g., Apple, Tomato)."
         },
+        "variety": {
+          "type": "string",
+          "description": "Variety of the produce (e.g., Red Delicious, Perita)."
+        },
         "category": {
           "type": "string",
           "description": "Category of the produce (e.g., Fruit, Vegetable)."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL of an image representing the produce.",
-          "format": "uri"
         }
       },
-      "required": [
-        "id",
-        "name",
-        "category"
-      ]
+      "required": ["name", "variety", "category"]
     },
     "Price": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Price",
-      "type": "object",
       "description": "Represents the price of a specific produce item at a specific time.",
+      "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the price entry."
-        },
         "produceId": {
           "type": "string",
-          "description": "Reference to the Produce item this price belongs to. (Relationship: Produce 1:N Price)"
+          "description": "Reference to the Produce item this price belongs to."
         },
-        "pricePerCrate": {
+        "price": {
           "type": "number",
           "description": "Price per crate of the produce."
         },
-        "timestamp": {
+        "date": {
           "type": "string",
-          "description": "Date and time when the price was recorded.",
+          "description": "ISO 8601 string of when the price was recorded.",
           "format": "date-time"
-        },
-        "adminId": {
-          "type": "string",
-          "description": "Reference to the Admin who entered the price. (Relationship: Admin 1:N Price)"
         }
       },
-      "required": [
-        "id",
-        "produceId",
-        "pricePerCrate",
-        "timestamp"
-      ]
-    },
-    "Admin": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Admin",
-      "type": "object",
-      "description": "Represents an administrator user who can manage produce and prices.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the administrator user."
-        },
-        "username": {
-          "type": "string",
-          "description": "Username of the administrator."
-        },
-        "email": {
-          "type": "string",
-          "description": "Email address of the administrator.",
-          "format": "email"
-        }
-      },
-      "required": [
-        "id",
-        "username",
-        "email"
-      ]
+      "required": ["produceId", "price", "date"]
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["anonymous"]
   },
   "firestore": {
     "structure": [
       {
         "path": "/produces/{produceId}",
         "definition": {
-          "entityName": "Produce",
           "schema": {
-            "$ref": "#/backend/entities/Produce"
+            "$ref": "#/entities/Produce"
           },
-          "description": "Stores information about each type of produce.  Anyone can read produces.",
-          "params": [
-            {
-              "name": "produceId",
-              "description": "The unique ID of the produce item."
-            }
-          ]
+          "description": "Stores information about each type of produce. Anyone can read, only admins can write."
         }
       },
       {
         "path": "/prices/{priceId}",
         "definition": {
-          "entityName": "Price",
           "schema": {
-            "$ref": "#/backend/entities/Price"
+            "$ref": "#/entities/Price"
           },
-          "description": "Stores the price of a specific produce item at a specific time. Includes denormalized 'adminId' for authorization independence and produceId to filter the prices by product.",
-          "params": [
-            {
-              "name": "priceId",
-              "description": "The unique ID of the price entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/admins/{adminId}",
-        "definition": {
-          "entityName": "Admin",
-          "schema": {
-            "$ref": "#/backend/entities/Admin"
-          },
-          "description": "Stores administrator user profiles.",
-          "params": [
-            {
-              "name": "adminId",
-              "description": "The unique ID of the administrator user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/roles_admin/{adminId}",
-        "definition": {
-          "entityName": "AdminRole",
-          "schema": {
-            "$ref": "#/backend/entities/Admin"
-          },
-          "description": "Existence of document confers admin role.  Used for DBAC (Database Assigned Control).",
-          "params": [
-            {
-              "name": "adminId",
-              "description": "The unique ID of the administrator user."
-            }
-          ]
+          "description": "Stores the time-series price data for all produce. Anyone can read, only admins can write."
         }
       }
-    ],
-    "reasoning": "The Firestore structure is designed to provide a secure, scalable, and easily maintainable backend for the CuyoCrops application. It leverages denormalization to ensure authorization independence, enabling atomic operations and simplifying security rules. The structure is segregated to maintain a homogeneous security posture within each collection, and access modeling follows consistent patterns for authorization. The design prioritizes clarity, predictability, and integrity.  Specifically, Prices denormalize the `adminId` for simpler security rules, and produceId to filter the prices by product.\n\nAuthorization Independence is achieved by denormalizing the `adminId` into the `/prices/{priceId}` collection. This eliminates the need for `get()` calls to the `/admins/{adminId}` document during price creation or modification, enabling atomic operations and simplifying security rules.\n\nThe QAPs (Rules Are Not Filters) are supported through structural segregation. The `/produces` and `/prices` collections are distinct and have well-defined access patterns. List operations on `/produces` are generally public (read-only), while create/update operations on `/prices` are restricted to authorized admins only. This segregation prevents the need for filtering on the client side."
+    ]
   }
 }

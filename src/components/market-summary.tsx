@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { Stall, Product } from '@/lib/types';
+import type { AggregatedProduct } from '@/lib/types';
 import {
   Card,
   CardContent,
@@ -21,12 +21,12 @@ type ProductMetric = {
   currentPrice: number;
 };
 
-const calculateMetrics = (product: Product): ProductMetric => {
+const calculateMetrics = (product: AggregatedProduct): ProductMetric => {
   if (product.priceHistory.length < 2) {
     return { name: `${product.name} (${product.variety})`, change: 0, currentPrice: product.priceHistory.at(-1)?.price ?? 0 };
   }
-  const currentPrice = product.priceHistory.at(-1)!.price;
-  const prevPrice = product.priceHistory.at(-2)!.price;
+  const currentPrice = product.priceHistory.at(0)!.price;
+  const prevPrice = product.priceHistory.at(1)!.price;
   const change = ((currentPrice - prevPrice) / prevPrice) * 100;
 
   return {
@@ -57,9 +57,9 @@ const MoverItem = ({ name, change, currentPrice }: ProductMetric) => {
 };
 
 
-export function MarketSummary({ stalls }: { stalls: Stall[] }) {
+export function MarketSummary({ products }: { products: AggregatedProduct[] }) {
   const marketMetrics = useMemo(() => {
-    const allProducts = stalls.flatMap((stall) => stall.products).filter(p => p.priceHistory.length > 1);
+    const allProducts = products.filter(p => p.priceHistory.length > 1);
     if (allProducts.length === 0) return null;
 
     const metrics = allProducts.map(calculateMetrics);
@@ -75,7 +75,7 @@ export function MarketSummary({ stalls }: { stalls: Stall[] }) {
         topGainers,
         topLosers,
     }
-  }, [stalls]);
+  }, [products]);
 
   if (!marketMetrics) {
     return <p className="text-muted-foreground">No hay datos de mercado para analizar.</p>;

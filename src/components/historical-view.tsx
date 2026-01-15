@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-import type { Product, PriceHistory } from '@/lib/types';
+import type { AggregatedProduct } from '@/lib/types';
 import { specialDates } from '@/lib/special-dates';
 
 import {
@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/table';
 import { Calendar, History } from 'lucide-react';
 
-export function HistoricalView({ products }: { products: Product[] }) {
+export function HistoricalView({ products }: { products: AggregatedProduct[] }) {
   const specialDatesPrices = useMemo(() => {
     return specialDates.map((specialDate) => {
       const targetDate = new Date(specialDate.date);
@@ -83,7 +83,7 @@ export function HistoricalView({ products }: { products: Product[] }) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {[...product.priceHistory].reverse().map((entry) => (
+                    {[...product.priceHistory].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((entry) => (
                       <TableRow key={entry.date} className="border-green-900/30">
                         <TableCell>
                           {format(new Date(entry.date), 'Pp', { locale: es })}

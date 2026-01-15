@@ -11,7 +11,7 @@ import {
   YAxis,
 } from 'recharts';
 
-import type { Product } from '@/lib/types';
+import type { AggregatedProduct } from '@/lib/types';
 import {
   ChartConfig,
   ChartContainer,
@@ -25,8 +25,8 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function PriceChart({ product, simple = false }: { product: Product, simple?: boolean }) {
-  const chartData = product.priceHistory.map((item) => ({
+export function PriceChart({ product, simple = false }: { product: AggregatedProduct, simple?: boolean }) {
+  const chartData = [...product.priceHistory].reverse().map((item) => ({
     date: new Date(item.date),
     price: item.price,
   }));

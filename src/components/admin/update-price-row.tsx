@@ -3,13 +3,13 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Loader2, Save, Trash2 } from 'lucide-react';
-import { Product } from '@/lib/types';
+import { AggregatedProduct } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { TableCell, TableHead, TableRow } from '@/components/ui/table';
 import { QuickPriceInput } from './quick-price-input';
 
 type UpdatePriceRowProps = {
-  product?: Product;
+  product?: AggregatedProduct;
   isUpdating?: boolean;
   onUpdate?: (productId: string, newPrice: number) => void;
   onDelete?: (productId: string) => void;
@@ -23,7 +23,7 @@ export function UpdatePriceRow({
   onDelete,
   isHeader,
 }: UpdatePriceRowProps) {
-  const currentPrice = product?.priceHistory.at(-1)?.price ?? 0;
+  const currentPrice = product?.priceHistory.at(0)?.price ?? 0;
   const [newPrice, setNewPrice] = useState(currentPrice);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,7 +48,7 @@ export function UpdatePriceRow({
 
   if (!product) return null;
 
-  const lastPriceEntry = product.priceHistory.at(-1);
+  const lastPriceEntry = product.priceHistory.at(0);
 
   return (
     <TableRow>

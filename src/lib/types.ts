@@ -11,6 +11,25 @@ export type Product = {
   priceHistory: PriceHistory[];
 };
 
+export type Produce = {
+  id: string;
+  name: string;
+  variety: string;
+  category: string;
+};
+
+export type Price = {
+  id: string;
+  produceId: string;
+  price: number;
+  date: string;
+};
+
+export type AggregatedProduct = Produce & {
+  priceHistory: { date: string; price: number }[];
+};
+
+
 export type Stall = {
   id: string;
   name: string;

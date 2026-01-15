@@ -1,17 +1,14 @@
 'use client';
 
-import type { Product } from '@/lib/types';
+import type { AggregatedProduct } from '@/lib/types';
 import { ArrowDown, ArrowUp, TrendingDown, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMemo } from 'react';
 
-// The ticker now receives products with stall info mixed in.
-type TickerProduct = Product & { stallName?: string, stallNumber?: number };
-
-export function PriceTicker({ products }: { products: TickerProduct[] }) {
+export function PriceTicker({ products }: { products: AggregatedProduct[] }) {
   const tickerItems = products.map((product) => {
-    const currentPrice = product.priceHistory.at(-1)?.price ?? 0;
-    const prevPrice = product.priceHistory.at(-2)?.price ?? currentPrice;
+    const currentPrice = product.priceHistory.at(0)?.price ?? 0;
+    const prevPrice = product.priceHistory.at(1)?.price ?? currentPrice;
     const change = currentPrice - prevPrice;
     const isUp = change > 0;
     const isDown = change < 0;
@@ -72,11 +69,11 @@ export function PriceTicker({ products }: { products: TickerProduct[] }) {
   );
 }
 
-export function TopMoversTicker({ products }: { products: TickerProduct[] }) {
+export function TopMoversTicker({ products }: { products: AggregatedProduct[] }) {
     const topMovers = useMemo(() => {
         const movers = products.map(product => {
-            const currentPrice = product.priceHistory.at(-1)?.price ?? 0;
-            const prevPrice = product.priceHistory.at(-2)?.price ?? currentPrice;
+            const currentPrice = product.priceHistory.at(0)?.price ?? 0;
+            const prevPrice = product.priceHistory.at(1)?.price ?? currentPrice;
             const change = currentPrice - prevPrice;
             const changePercent = prevPrice > 0 ? (change / prevPrice) * 100 : 0;
             return {
