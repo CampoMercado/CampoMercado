@@ -19,3 +19,11 @@ export type Stall = {
 };
 
 export type TickerProduct = Product & { stallName: string, stallNumber: number };
+
+export type NewsArticle = {
+  id: string;
+  title: string;
+  date: string;
+  source: string;
+  content: string;
+};
