@@ -6,7 +6,6 @@ import { mockStalls } from '@/lib/data.tsx';
 import { Header } from '@/components/header';
 import { PriceTicker, TopMoversTicker } from '@/components/price-ticker';
 import { ProductCard } from '@/components/product-card';
-import { MarketAnalysis } from '@/components/market-analysis';
 import { SectorAnalysis } from '@/components/sector-analysis';
 import { BrokerChart } from '@/components/broker-chart';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { MarketNews } from '@/components/market-news';
+import { MarketSummary } from '@/components/market-summary';
 
 type View = 'prices' | 'chart' | 'summary' | 'sector';
 
@@ -28,39 +27,38 @@ export default function Home() {
   const [stalls] = useState<Stall[]>(mockStalls);
   const [activeView, setActiveView] = useState<View>('prices');
   const [appState, setAppState] = useState('welcome'); // 'welcome', 'loading', 'ready'
-  
+
   useEffect(() => {
     const welcomeShown = sessionStorage.getItem('welcomeShown');
     if (welcomeShown) {
       setAppState('loading');
       const loadingTimer = setTimeout(() => {
-          setAppState('ready');
+        setAppState('ready');
       }, 5000); // 5s loading
 
       return () => {
-          clearTimeout(loadingTimer);
+        clearTimeout(loadingTimer);
       };
     } else {
-        const welcomeTimer = setTimeout(() => {
-            sessionStorage.setItem('welcomeShown', 'true');
-            setAppState('loading');
-        }, 2500); // Sync with welcome animation
+      const welcomeTimer = setTimeout(() => {
+        sessionStorage.setItem('welcomeShown', 'true');
+        setAppState('loading');
+      }, 2500); // Sync with welcome animation
 
-        const loadingTimer = setTimeout(() => {
-            setAppState('ready');
-        }, 7500); // 2.5s (welcome) + 5s (loading)
+      const loadingTimer = setTimeout(() => {
+        setAppState('ready');
+      }, 7500); // 2.5s (welcome) + 5s (loading)
 
-        return () => {
-            clearTimeout(welcomeTimer);
-            clearTimeout(loadingTimer);
-        };
+      return () => {
+        clearTimeout(welcomeTimer);
+        clearTimeout(loadingTimer);
+      };
     }
   }, []);
 
-
   const { allProducts, aggregatedProducts } = useMemo(() => {
-    const allProducts: TickerProduct[] = stalls.flatMap(stall =>
-      stall.products.map(p => ({
+    const allProducts: TickerProduct[] = stalls.flatMap((stall) =>
+      stall.products.map((p) => ({
         ...p,
         stallName: stall.name,
         stallNumber: stall.number,
@@ -82,23 +80,25 @@ export default function Home() {
       acc[key].sourceStalls.push(product);
       return acc;
     }, {} as Record<string, Product & { sourceStalls: TickerProduct[] }>);
-    
-    const aggregatedProducts = Object.values(productGroups).map(group => {
+
+    const aggregatedProducts = Object.values(productGroups).map((group) => {
       // A more robust aggregation for history: average prices per day
       const historyByDate: Record<string, number[]> = {};
-      group.sourceStalls.forEach(p => {
-        p.priceHistory.forEach(h => {
+      group.sourceStalls.forEach((p) => {
+        p.priceHistory.forEach((h) => {
           const date = new Date(h.date).toISOString().split('T')[0];
           if (!historyByDate[date]) historyByDate[date] = [];
           historyByDate[date].push(h.price);
         });
       });
 
-      const aggregatedHistory = Object.entries(historyByDate).map(([date, prices]) => ({
-        date: new Date(date).toISOString(),
-        price: prices.reduce((a, b) => a + b, 0) / prices.length,
-      })).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      
+      const aggregatedHistory = Object.entries(historyByDate)
+        .map(([date, prices]) => ({
+          date: new Date(date).toISOString(),
+          price: prices.reduce((a, b) => a + b, 0) / prices.length,
+        }))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
       return {
         ...group,
         priceHistory: aggregatedHistory,
@@ -108,7 +108,13 @@ export default function Home() {
     return { allProducts, aggregatedProducts };
   }, [stalls]);
 
-  const TabButton = ({ view, children }: { view: View; children: React.ReactNode }) => (
+  const TabButton = ({
+    view,
+    children,
+  }: {
+    view: View;
+    children: React.ReactNode;
+  }) => (
     <Button
       variant="ghost"
       onClick={() => setActiveView(view)}
@@ -121,31 +127,51 @@ export default function Home() {
     </Button>
   );
 
-  const StallsDisplay = ({ products, allProducts }: { products: Product[], allProducts: TickerProduct[] }) => (
+  const StallsDisplay = ({
+    products,
+    allProducts,
+  }: {
+    products: Product[];
+    allProducts: TickerProduct[];
+  }) => (
     <div className="border border-green-800/50 rounded-lg bg-black/30 overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-green-800/50 hover:bg-gray-900/50 text-xs uppercase">
-                <TableHead className="text-green-300 px-2">Producto</TableHead>
-                <TableHead className="text-right text-green-300 px-2">Precio y Actualización</TableHead>
-                <TableHead className="text-right text-green-300 px-2 w-[100px]">Var. (ant.)</TableHead>
-                <TableHead className="text-right text-green-300 px-2 w-[100px]">Var. (7d)</TableHead>
-                <TableHead className="text-green-300 px-2 w-[160px] hidden md:table-cell">Análisis</TableHead>
-                <TableHead className="text-green-300 px-2 w-[160px] hidden lg:table-cell">Mercado</TableHead>
-                <TableHead className="w-[120px] hidden sm:table-cell py-3 px-2"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} marketProducts={allProducts} />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-green-800/50 hover:bg-gray-900/50 text-xs uppercase">
+              <TableHead className="text-green-300 px-2">Producto</TableHead>
+              <TableHead className="text-right text-green-300 px-2">
+                Precio y Actualización
+              </TableHead>
+              <TableHead className="text-right text-green-300 px-2 w-[100px]">
+                Var. (ant.)
+              </TableHead>
+              <TableHead className="text-right text-green-300 px-2 w-[100px]">
+                Var. (7d)
+              </TableHead>
+              <TableHead className="text-green-300 px-2 w-[160px] hidden md:table-cell">
+                Análisis
+              </TableHead>
+              <TableHead className="text-green-300 px-2 w-[160px] hidden lg:table-cell">
+                Mercado
+              </TableHead>
+              <TableHead className="w-[120px] hidden sm:table-cell py-3 px-2"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {products.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                marketProducts={allProducts}
+              />
+            ))}
+          </TableBody>
+        </Table>
       </div>
+    </div>
   );
-  
+
   if (appState === 'welcome') {
     return <WelcomeTerminal />;
   }
@@ -167,37 +193,34 @@ export default function Home() {
               MERCADO DIARIO
             </h1>
             <p className="text-green-500 mt-2 text-sm tracking-wider">
-              MERCADO COOPERATIVO DE GUAYMALLÉN
+              MERCADO COOPERATIVO DE GUYAMALLÉN
             </p>
           </div>
-          
+
           <div className="border-b border-green-800/50 mb-6">
-             <div className="flex items-center space-x-2">
-                <TabButton view="prices">Precios</TabButton>
-                <TabButton view="chart">Gráfico de Mercado</TabButton>
-                <TabButton view="summary">Resumen del Mercado</TabButton>
-                <TabButton view="sector">Análisis por Sector</TabButton>
-             </div>
-          </div>
-          
-          {activeView === 'prices' && <StallsDisplay products={aggregatedProducts} allProducts={allProducts} />}
-          {activeView === 'chart' && <BrokerChart products={aggregatedProducts} />}
-          {activeView === 'summary' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="lg:col-span-2">
-                <MarketAnalysis stalls={stalls} />
-              </div>
-              <div>
-                <MarketNews />
-              </div>
+            <div className="flex items-center space-x-2">
+              <TabButton view="prices">Precios</TabButton>
+              <TabButton view="chart">Gráfico de Mercado</TabButton>
+              <TabButton view="summary">Resumen del Mercado</TabButton>
+              <TabButton view="sector">Análisis por Sector</TabButton>
             </div>
+          </div>
+
+          {activeView === 'prices' && (
+            <StallsDisplay
+              products={aggregatedProducts}
+              allProducts={allProducts}
+            />
           )}
+          {activeView === 'chart' && <BrokerChart products={aggregatedProducts} />}
+          {activeView === 'summary' && <MarketSummary stalls={stalls} />}
           {activeView === 'sector' && <SectorAnalysis stalls={stalls} />}
         </div>
       </main>
 
       <footer className="container py-6 text-center text-green-600/50 text-xs">
-        © {new Date().getFullYear()} CAMPO MERCADO. TODOS LOS DERECHOS RESERVADOS.
+        © {new Date().getFullYear()} CAMPO MERCADO. TODOS LOS DERECHOS
+        RESERVADOS.
       </footer>
     </div>
   );
