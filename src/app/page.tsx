@@ -21,8 +21,9 @@ import {
 } from '@/components/ui/table';
 import { MarketSummary } from '@/components/market-summary';
 import { MarketStatus } from '@/components/market-status';
+import { HistoricalView } from '@/components/historical-view';
 
-type View = 'prices' | 'chart' | 'summary' | 'availability';
+type View = 'prices' | 'chart' | 'summary' | 'availability' | 'history';
 
 export default function Home() {
   const [stalls] = useState<Stall[]>(mockStalls);
@@ -219,11 +220,12 @@ export default function Home() {
           </div>
 
           <div className="border-b border-green-800/50 mb-6">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-wrap">
               <TabButton view="prices">Precios</TabButton>
               <TabButton view="chart">Gráfico de Mercado</TabButton>
               <TabButton view="summary">Resumen del Mercado</TabButton>
               <TabButton view="availability">Disponibilidad</TabButton>
+              <TabButton view="history">Históricos</TabButton>
             </div>
           </div>
 
@@ -236,6 +238,7 @@ export default function Home() {
           {activeView === 'chart' && <BrokerChart products={aggregatedProducts} />}
           {activeView === 'summary' && <MarketSummary stalls={stalls} />}
           {activeView === 'availability' && <SeasonalAvailability />}
+          {activeView === 'history' && <HistoricalView products={aggregatedProducts} />}
         </div>
       </main>
 
