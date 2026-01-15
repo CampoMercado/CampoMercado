@@ -62,6 +62,26 @@
         }
       },
       "required": ["fullName", "email"]
+    },
+    "InventoryItem": {
+      "title": "Inventory Item",
+      "description": "Represents a single type of produce held in a user's inventory.",
+      "type": "object",
+      "properties": {
+        "produceId": {
+          "type": "string",
+          "description": "Reference to the global Produce item."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Number of crates in stock."
+        },
+        "purchasePrice": {
+          "type": "number",
+          "description": "Price per crate at which the item was purchased."
+        }
+      },
+      "required": ["produceId", "quantity", "purchasePrice"]
     }
   },
   "auth": {
@@ -85,6 +105,12 @@
         "$ref": "#/entities/UserProfile"
       },
       "description": "Stores the profile for a specific user, identified by their Firebase Auth UID."
+    },
+    "/users/{userId}/inventory/{inventoryItemId}": {
+      "schema": {
+        "$ref": "#/entities/InventoryItem"
+      },
+      "description": "Stores the inventory items for a specific user."
     }
   }
 }
