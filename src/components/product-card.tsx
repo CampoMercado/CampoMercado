@@ -85,21 +85,21 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
         title="Ver gráfico detallado"
       >
         <TableCell className="py-3 px-4">
-          <div className="font-bold text-sm md:text-base text-green-300">{product.name}</div>
+          <div className="font-bold text-sm text-green-300">{product.name}</div>
           <div className="text-xs text-green-500">{product.variety}</div>
         </TableCell>
         <TableCell className={cn(
             "text-right py-3 px-4 transition-all duration-500",
              isHighlighted && "border-y-2 border-accent/80 bg-accent/10"
             )}>
-          <span className="text-xl md:text-2xl font-mono text-green-200">
+          <span className="text-lg md:text-xl font-mono text-green-200">
             ${currentPrice.toLocaleString()}
           </span>
            <div className="text-xs text-muted-foreground mt-1 text-right hidden sm:block">
               {lastUpdateLabel}
             </div>
         </TableCell>
-        <TableCell className="text-right py-3 px-4 w-[100px]">
+        <TableCell className="text-right py-3 px-4 w-[80px] sm:w-[100px]">
           <ChangeIndicator value={changePercent} label="Var."/>
         </TableCell>
         <TableCell className="py-3 px-4 w-[160px] hidden md:table-cell">

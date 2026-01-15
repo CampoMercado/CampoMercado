@@ -101,7 +101,7 @@ export default function Home() {
       variant="ghost"
       onClick={() => setActiveView(view)}
       className={cn(
-        'text-green-400 hover:bg-green-900 hover:text-green-200 text-sm md:text-base px-2 md:px-4',
+        'text-green-400 hover:bg-green-900 hover:text-green-200 text-xs md:text-sm px-2 md:px-4',
         activeView === view && 'bg-green-800/80 text-green-100'
       )}
     >
@@ -123,7 +123,7 @@ export default function Home() {
               <TableHead className="text-right text-green-300 px-4">
                 Último Precio
               </TableHead>
-              <TableHead className="text-right text-green-300 px-4 w-[100px]">
+              <TableHead className="text-right text-green-300 px-4 w-[80px] sm:w-[100px]">
                 Var.
               </TableHead>
               <TableHead className="text-green-300 px-4 w-[160px] hidden md:table-cell">
@@ -169,18 +169,18 @@ export default function Home() {
         <div>
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <h1 className="text-3xl md:text-4xl lg:text-6xl font-headline tracking-widest text-green-300">
+              <h1 className="text-2xl md:text-4xl lg:text-6xl font-headline tracking-widest text-green-300">
                 MERCADO DIARIO
               </h1>
               <MarketStatus onStatusChange={setMarketOpen} />
             </div>
-            <p className="text-green-500 mt-2 text-sm tracking-wider">
+            <p className="text-green-500 mt-2 text-xs md:text-sm tracking-wider">
               MERCADO COOPERATIVO DE GUYAMALLÉN
             </p>
           </div>
 
           <div className="border-b border-green-800/50 mb-6">
-            <div className="flex items-center space-x-0 md:space-x-2 flex-wrap">
+            <div className="flex items-center space-x-0 md:space-x-1 flex-wrap">
               <TabButton view="prices">Precios</TabButton>
               <TabButton view="chart">Gráfico</TabButton>
               <TabButton view="summary">Resumen</TabButton>

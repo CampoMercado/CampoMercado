@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PlusCircle, TriangleAlert } from 'lucide-react';
-import { collection, doc, writeBatch, where, query } from 'firebase/firestore';
+import { collection, doc, writeBatch, where, query, getDocs } from 'firebase/firestore';
 
 import { validatePriceAction } from './actions';
 import { UpdatePriceRow } from '@/components/admin/update-price-row';
@@ -21,7 +21,7 @@ import type { Produce, Price, AggregatedProduct } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableHeader, TableRow, TableCell } from '@/components/ui/table';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -193,9 +193,6 @@ export default function AdminPage() {
     // 2. Query and delete all associated prices
     const pricesToDeleteQuery = query(pricesRef, where('produceId', '==', productId));
     
-    // This part is tricky with non-blocking. For simplicity here we do it this way.
-    // In a real-world app, this might be a cloud function.
-    const { getDocs } = await import('firebase/firestore');
     const pricesSnapshot = await getDocs(pricesToDeleteQuery);
     const batch = writeBatch(firestore);
     pricesSnapshot.forEach(doc => {
@@ -239,7 +236,7 @@ export default function AdminPage() {
                     key={letter}
                     variant={activeLetter === letter ? 'default' : 'outline'}
                     size="sm"
-                    className="w-8 h-8 md:w-9 md:h-9"
+                    className="w-8 h-8 p-0"
                     onClick={() => setActiveLetter(letter)}
                   >
                     {letter}
@@ -256,7 +253,7 @@ export default function AdminPage() {
                   <TableBody>
                     {isLoading ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8">
+                        <TableCell colSpan={5} className="text-center py-8">
                           Cargando productos...
                         </TableCell>
                       </TableRow>
