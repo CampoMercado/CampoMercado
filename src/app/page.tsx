@@ -1,26 +1,59 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import type { Stall, Product } from '@/lib/types';
+import { useState, useMemo, useEffect } from 'react';
+import type { Stall, Product, TickerProduct } from '@/lib/types';
 import { mockStalls } from '@/lib/data.tsx';
 import { Header } from '@/components/header';
 import { PriceTicker, TopMoversTicker } from '@/components/price-ticker';
-import { StallsDisplay } from '@/components/stalls-display';
+import { ProductCard } from '@/components/product-card';
 import { MarketAnalysis } from '@/components/market-analysis';
 import { SectorAnalysis } from '@/components/sector-analysis';
 import { BrokerChart } from '@/components/broker-chart';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
+import { WelcomeTerminal } from '@/components/welcome-terminal';
+import { LoadingSkeleton } from '@/components/loading-skeleton';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 type View = 'prices' | 'chart' | 'summary' | 'sector';
 
 export default function Home() {
   const [stalls] = useState<Stall[]>(mockStalls);
   const [activeView, setActiveView] = useState<View>('prices');
+  const [appState, setAppState] = useState('welcome'); // 'welcome', 'loading', 'ready'
+  
+  useEffect(() => {
+    const welcomeShown = sessionStorage.getItem('welcomeShown');
+    if (welcomeShown) {
+      setAppState('loading');
+    }
+
+    const welcomeTimer = setTimeout(() => {
+        if (!welcomeShown) {
+            sessionStorage.setItem('welcomeShown', 'true');
+        }
+        setAppState('loading');
+    }, 3500); // Duration of welcome animation
+
+    const loadingTimer = setTimeout(() => {
+        setAppState('ready');
+    }, 2000); // Duration of skeleton screen
+
+    return () => {
+        clearTimeout(welcomeTimer);
+        clearTimeout(loadingTimer);
+    };
+  }, []);
+
 
   const { allProducts, aggregatedProducts } = useMemo(() => {
-    const allProducts = stalls.flatMap(stall =>
+    const allProducts: TickerProduct[] = stalls.flatMap(stall =>
       stall.products.map(p => ({
         ...p,
         stallName: stall.name,
@@ -32,20 +65,20 @@ export default function Home() {
       const key = `${product.name}-${product.variety}`;
       if (!acc[key]) {
         acc[key] = {
-          ...product,
-          priceHistory: [], // Will be aggregated
+          id: key, // Create a stable ID
+          name: product.name,
+          variety: product.variety,
+          category: product.category,
+          priceHistory: [],
           sourceStalls: [],
         };
       }
       acc[key].sourceStalls.push(product);
       return acc;
-    }, {} as Record<string, Product & { sourceStalls: Product[] }>);
+    }, {} as Record<string, Product & { sourceStalls: TickerProduct[] }>);
     
     const aggregatedProducts = Object.values(productGroups).map(group => {
-      const latestPrices = group.sourceStalls.map(p => p.priceHistory.at(-1)?.price ?? 0).filter(p => p > 0);
-      const latestPrice = latestPrices.reduce((a, b) => a + b, 0) / (latestPrices.length || 1);
-
-      // A simple aggregation for history: average prices per day
+      // A more robust aggregation for history: average prices per day
       const historyByDate: Record<string, number[]> = {};
       group.sourceStalls.forEach(p => {
         p.priceHistory.forEach(h => {
@@ -82,11 +115,44 @@ export default function Home() {
     </Button>
   );
 
+  const StallsDisplay = ({ products, allProducts }: { products: Product[], allProducts: TickerProduct[] }) => (
+    <div className="border border-green-800/50 rounded-lg bg-black/30 overflow-hidden">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-green-800/50 hover:bg-gray-900/50 text-xs uppercase">
+                <TableHead className="text-green-300 px-2">Producto</TableHead>
+                <TableHead className="text-right text-green-300 px-2">Precio y Actualización</TableHead>
+                <TableHead className="text-right text-green-300 px-2 w-[100px]">Var. (ant.)</TableHead>
+                <TableHead className="text-right text-green-300 px-2 w-[100px]">Var. (7d)</TableHead>
+                <TableHead className="text-green-300 px-2 w-[160px] hidden md:table-cell">Análisis</TableHead>
+                <TableHead className="text-green-300 px-2 w-[160px] hidden lg:table-cell">Mercado</TableHead>
+                <TableHead className="text-center text-green-300 w-[120px] hidden sm:table-cell px-2">Tendencia</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} marketProducts={allProducts} />
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+  );
+  
+  if (appState === 'welcome') {
+    return <WelcomeTerminal />;
+  }
+
+  if (appState === 'loading') {
+    return <LoadingSkeleton />;
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-black text-green-400">
       <Header />
       <PriceTicker products={allProducts} />
-      <TopMoversTicker products={allProducts} />
+      <TopMoversTicker products={aggregatedProducts} />
 
       <main className="flex-grow container py-8 space-y-8">
         <div>

@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { useMemo } from 'react';
 
 // The ticker now receives products with stall info mixed in.
-type TickerProduct = Product & { stallName: string, stallNumber: number };
+type TickerProduct = Product & { stallName?: string, stallNumber?: number };
 
 export function PriceTicker({ products }: { products: TickerProduct[] }) {
   const tickerItems = products.map((product) => {
