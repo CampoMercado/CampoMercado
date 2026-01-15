@@ -56,3 +56,10 @@ export type UserProfile = {
     email: string;
     dashboardType?: 'own_stall' | 'third_party';
 }
+
+export type InventoryItem = {
+  id: string;
+  produceId: string;
+  quantity: number;
+  purchasePrice: number;
+}

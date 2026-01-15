@@ -15,6 +15,7 @@ import { Building, Handshake, Loader2 } from 'lucide-react';
 import type { UserProfile } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { OwnStallDashboard } from '@/components/dashboard/own-stall-dashboard';
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -57,12 +58,17 @@ export default function DashboardPage() {
 
   // If profile exists and has a dashboard type, show the dashboard.
   if (userProfile?.dashboardType) {
-    return (
-      <div>
-        <p>Dashboard: {userProfile.dashboardType === 'own_stall' ? 'Propio Puesto' : 'Tercerizados'}</p>
-        {/* Dashboard components will go here */}
-      </div>
-    );
+    if (userProfile.dashboardType === 'own_stall') {
+      return <OwnStallDashboard />;
+    }
+    if (userProfile.dashboardType === 'third_party') {
+      return (
+        <div>
+          <p>Dashboard: Comprar y Vender (Tercerizado)</p>
+          {/* Third party components will go here */}
+        </div>
+      );
+    }
   }
 
   // If no dashboard type is set, show the selection UI.
