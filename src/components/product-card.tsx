@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { format, formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { PriceChart } from './price-chart';
-import type { Product, TickerProduct } from '@/lib/types';
+import type { Product, TickerProduct, PriceHistory } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ArrowDown, ArrowUp, BarChart2, Minus } from 'lucide-react';
 
@@ -14,16 +16,36 @@ type ProductCardProps = {
   marketProducts: TickerProduct[];
 };
 
+// Helper to find the price closest to N days ago
+const findPriceNearDaysAgo = (priceHistory: PriceHistory[], days: number): PriceHistory | undefined => {
+  if (priceHistory.length < 2) return undefined;
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() - days);
+
+  return priceHistory.reduce((prev, curr) => {
+    const prevDiff = Math.abs(new Date(prev.date).getTime() - targetDate.getTime());
+    const currDiff = Math.abs(new Date(curr.date).getTime() - targetDate.getTime());
+    return currDiff < prevDiff ? curr : prev;
+  });
+};
+
+
 export function ProductCard({ product, marketProducts }: ProductCardProps) {
   const [isChartOpen, setChartOpen] = useState(false);
 
   const productAnalysis = useMemo(() => {
-    const currentPriceData = product.priceHistory.at(-1);
-    if (!currentPriceData) return null;
+    if (product.priceHistory.length === 0) return null;
 
+    const currentPriceData = product.priceHistory.at(-1)!;
     const currentPrice = currentPriceData.price;
-    const prevPrice = product.priceHistory.at(-2)?.price ?? currentPrice;
-    const weeklyPrice = product.priceHistory.at(-8) ?? product.priceHistory[0]?.price ?? currentPrice;
+    
+    // Previous price is the one right before the last one
+    const prevPriceData = product.priceHistory.at(-2);
+    const prevPrice = prevPriceData?.price ?? currentPrice;
+
+    // Weekly price is the one closest to 7 days ago
+    const weeklyPriceData = findPriceNearDaysAgo(product.priceHistory, 7);
+    const weeklyPrice = weeklyPriceData?.price ?? product.priceHistory[0].price;
 
     const dailyChange = currentPrice - prevPrice;
     const dailyChangePercent = prevPrice === 0 ? 0 : (dailyChange / prevPrice) * 100;
@@ -43,11 +65,12 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
       .map(p => p.priceHistory.at(-1)?.price ?? 0)
       .filter(price => price > 0);
 
-    const marketMin = Math.min(...relevantMarketPrices);
-    const marketMax = Math.max(...relevantMarketPrices);
+    const marketMin = relevantMarketPrices.length > 0 ? Math.min(...relevantMarketPrices) : 0;
+    const marketMax = relevantMarketPrices.length > 0 ? Math.max(...relevantMarketPrices) : 0;
 
     return {
       currentPrice,
+      lastUpdate: currentPriceData.date,
       dailyChangePercent,
       weeklyChangePercent,
       volatility,
@@ -59,16 +82,19 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
 
   if (!productAnalysis) return null;
 
-  const { currentPrice, dailyChangePercent, weeklyChangePercent, volatility, movingAverage7d, marketMin, marketMax } = productAnalysis;
+  const { currentPrice, lastUpdate, dailyChangePercent, weeklyChangePercent, volatility, movingAverage7d, marketMin, marketMax } = productAnalysis;
 
-  const ChangeIndicator = ({ value }: { value: number }) => {
+  const ChangeIndicator = ({ value, label }: { value: number, label: string }) => {
     const isUp = value > 0;
     const isDown = value < 0;
     const Icon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
     return (
-      <div className={cn('flex items-center justify-end gap-1 text-xs font-mono', isUp && 'text-success', isDown && 'text-danger')}>
-        <Icon size={12} />
-        <span>{value.toFixed(1)}%</span>
+       <div className="font-medium">
+            <div className="text-sm text-muted-foreground">{label}</div>
+            <div className={cn('flex items-center justify-end gap-1 text-xs font-mono', isUp && 'text-success', isDown && 'text-danger')}>
+                <Icon size={12} />
+                <span>{value.toFixed(1)}%</span>
+            </div>
       </div>
     );
   };
@@ -84,18 +110,15 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
           <span className="text-2xl font-mono text-green-200">
             ${currentPrice.toLocaleString()}
           </span>
+           <div className="text-xs text-muted-foreground mt-1 text-right">
+              {format(new Date(lastUpdate), "d MMM, HH:mm", { locale: es })}
+            </div>
         </TableCell>
         <TableCell className="text-right py-3 px-2 w-[100px]">
-          <div className="font-medium">
-            <div className="text-sm text-muted-foreground">Diario</div>
-            <ChangeIndicator value={dailyChangePercent} />
-          </div>
+          <ChangeIndicator value={dailyChangePercent} label="vs Ant."/>
         </TableCell>
         <TableCell className="text-right py-3 px-2 w-[100px]">
-          <div className="font-medium">
-            <div className="text-sm text-muted-foreground">Semanal</div>
-            <ChangeIndicator value={weeklyChangePercent} />
-          </div>
+          <ChangeIndicator value={weeklyChangePercent} label="vs 7d"/>
         </TableCell>
         <TableCell className="py-3 px-2 w-[160px] hidden md:table-cell">
           <div className="flex items-center justify-between">
@@ -118,20 +141,13 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
           </div>
         </TableCell>
         <TableCell className="w-[120px] hidden sm:table-cell py-3 px-2">
-          <div className="mx-auto">
+           <div 
+             className="mx-auto cursor-pointer"
+             onClick={() => setChartOpen(true)}
+             title="Ver gráfico detallado"
+           >
             <PriceChart product={product} simple />
           </div>
-        </TableCell>
-        <TableCell className="text-right py-3 px-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setChartOpen(true)}
-            className="text-green-400 hover:bg-green-900 hover:text-green-200"
-          >
-            <BarChart2 className="mr-2 h-4 w-4" />
-            <span className="hidden xl:inline">Gráfico</span>
-          </Button>
         </TableCell>
       </TableRow>
 
