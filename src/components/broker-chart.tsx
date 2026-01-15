@@ -39,13 +39,12 @@ const generateColor = (index: number) => {
 
 const CustomTooltipComponent = ({ active, payload, label, chartConfig }: any) => {
   if (active && payload && payload.length) {
+    const date = new Date(label);
+    const formattedDate = format(date, 'Pp', { locale: es });
+
     return (
       <div className="p-2 bg-black/80 border border-green-700 rounded-md shadow-lg text-sm">
-        <p className="label text-green-300 font-bold">{`${format(
-          new Date(label),
-          'PPP',
-          { locale: es }
-        )}`}</p>
+        <p className="label text-green-300 font-bold">{formattedDate}</p>
         {payload.map((pld: any) => (
           <div key={pld.dataKey} style={{ color: pld.color }}>
             {pld.value
@@ -80,57 +79,54 @@ const BrokerChartComponent = ({ products }: { products: AggregatedProduct[] }) =
 
   const { chartData, chartConfig } = useMemo(() => {
     const config: ChartConfig = {};
-    const dataByDate: Record<string, Record<string, number | string>> = {};
-    const allDates = new Set<string>();
+    const allPricePoints: { date: Date, productId: string, price: number }[] = [];
+    const allTimestamps = new Set<number>();
 
     products.forEach((product, index) => {
       config[product.id] = {
         label: `${product.name} (${product.variety})`,
         color: generateColor(index),
       };
-      product.priceHistory.forEach((item) => {
-        const dateStr = new Date(item.date).toISOString().split('T')[0];
-        allDates.add(dateStr);
-        if (!dataByDate[dateStr]) {
-          dataByDate[dateStr] = { date: dateStr };
-        }
-        dataByDate[dateStr][product.id] = item.price;
-      });
-    });
-
-    const sortedDates = Array.from(allDates).sort();
-
-    const finalChartData = sortedDates.map((dateStr) => {
-      const entry: Record<string, number | Date> = {
-        date: new Date(dateStr),
-      };
-      products.forEach((product) => {
-        const priceItem = product.priceHistory.find(
-          (h) => new Date(h.date).toISOString().split('T')[0] === dateStr
-        );
-        // Fill forward for missing data points in the selected range
-        if (selectedProducts.includes(product.id)) {
-            if (priceItem) {
-                entry[product.id] = priceItem.price;
-            }
-        }
-      });
-      return entry;
-    }).map((entry, index, arr) => {
-        selectedProducts.forEach(productId => {
-            if (entry[productId] === undefined) {
-                 // find previous value
-                for (let i = index - 1; i >= 0; i--) {
-                    if (arr[i][productId] !== undefined) {
-                        entry[productId] = arr[i][productId];
-                        break;
-                    }
-                }
-            }
+      if (selectedProducts.includes(product.id)) {
+        product.priceHistory.forEach((item) => {
+          const date = new Date(item.date);
+          allPricePoints.push({ date, productId: product.id, price: item.price });
+          allTimestamps.add(date.getTime());
         });
-        return entry;
+      }
     });
 
+    const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b);
+
+    const lastPrices: Record<string, number> = {};
+    selectedProducts.forEach(prodId => {
+      const product = products.find(p => p.id === prodId);
+      if (product && product.priceHistory.length > 0) {
+        // Find the earliest price to start with
+        const earliestPrice = [...product.priceHistory].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+        lastPrices[prodId] = earliestPrice.price;
+      }
+    });
+
+
+    const finalChartData = sortedTimestamps.map(timestamp => {
+      const entry: Record<string, number | Date> = {
+        date: new Date(timestamp),
+      };
+
+      // Get all prices for this exact timestamp
+      const pricesAtTimestamp = allPricePoints.filter(p => p.date.getTime() === timestamp);
+      for(const pricePoint of pricesAtTimestamp) {
+        lastPrices[pricePoint.productId] = pricePoint.price;
+      }
+
+      // Fill data for all selected products
+      for (const productId of selectedProducts) {
+        entry[productId] = lastPrices[productId];
+      }
+      
+      return entry;
+    });
 
     return { chartData: finalChartData, chartConfig: config };
   }, [products, selectedProducts]);
@@ -157,11 +153,14 @@ const BrokerChartComponent = ({ products }: { products: AggregatedProduct[] }) =
                 />
                 <XAxis
                   dataKey="date"
+                  type="number"
+                  scale="time"
+                  domain={['dataMin', 'dataMax']}
                   tickLine={false}
                   axisLine={false}
                   tickMargin={8}
-                  tickFormatter={(value) =>
-                    format(new Date(value), 'dd MMM', { locale: es })
+                  tickFormatter={(unixTime) =>
+                    format(new Date(unixTime), 'dd MMM HH:mm', { locale: es })
                   }
                   style={{
                     fill: 'hsl(140 40% 80%)',
@@ -186,6 +185,7 @@ const BrokerChartComponent = ({ products }: { products: AggregatedProduct[] }) =
                     strokeWidth: 1,
                     strokeDasharray: '3 3',
                   }}
+                  labelFormatter={(label) => new Date(label).toLocaleString()}
                 />
                 <Legend
                   wrapperStyle={{ color: 'white', paddingTop: '20px' }}
@@ -199,12 +199,12 @@ const BrokerChartComponent = ({ products }: { products: AggregatedProduct[] }) =
                   <Line
                     key={productId}
                     dataKey={productId}
-                    type="monotone"
+                    type="stepAfter"
                     stroke={chartConfig[productId]?.color}
                     strokeWidth={2}
                     dot={false}
                     name={`${chartConfig[productId]?.label}`}
-                    connectNulls
+                    connectNulls={false} // Important for step chart
                   />
                 ))}
               </ComposedChart>
