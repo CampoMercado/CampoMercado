@@ -29,6 +29,8 @@ export default function Home() {
   const [activeView, setActiveView] = useState<View>('prices');
   const [appState, setAppState] = useState('welcome'); // 'welcome', 'loading', 'ready'
   const [marketOpen, setMarketOpen] = useState(true); // Default to open, will be updated
+  const [highlightedProductId, setHighlightedProductId] = useState<string | null>(null);
+
 
   useEffect(() => {
     const welcomeShown = sessionStorage.getItem('welcomeShown');
@@ -109,6 +111,21 @@ export default function Home() {
 
     return { allProducts, aggregatedProducts };
   }, [stalls]);
+  
+  useEffect(() => {
+    if (appState !== 'ready' || aggregatedProducts.length === 0) {
+      return;
+    }
+
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      setHighlightedProductId(aggregatedProducts[currentIndex].id);
+      currentIndex = (currentIndex + 1) % aggregatedProducts.length;
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [appState, aggregatedProducts]);
+
 
   const TabButton = ({
     view,
@@ -164,6 +181,7 @@ export default function Home() {
                 product={product}
                 marketProducts={allProducts}
                 marketOpen={marketOpen}
+                isHighlighted={highlightedProductId === product.id}
               />
             ))}
           </TableBody>

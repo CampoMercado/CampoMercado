@@ -14,9 +14,10 @@ type ProductCardProps = {
   product: Product;
   marketProducts: TickerProduct[];
   marketOpen: boolean;
+  isHighlighted?: boolean;
 };
 
-export function ProductCard({ product, marketProducts, marketOpen }: ProductCardProps) {
+export function ProductCard({ product, marketProducts, marketOpen, isHighlighted }: ProductCardProps) {
   const [isChartOpen, setChartOpen] = useState(false);
 
   const productAnalysis = useMemo(() => {
@@ -83,7 +84,10 @@ export function ProductCard({ product, marketProducts, marketOpen }: ProductCard
           <div className="font-bold text-base text-green-300">{product.name}</div>
           <div className="text-xs text-green-500">{product.variety}</div>
         </TableCell>
-        <TableCell className="text-right py-3 px-2">
+        <TableCell className={cn(
+            "text-right py-3 px-2 transition-all duration-500",
+             isHighlighted && "border-y-2 border-accent/80 bg-accent/10"
+            )}>
           <span className="text-2xl font-mono text-green-200">
             ${currentPrice.toLocaleString()}
           </span>
