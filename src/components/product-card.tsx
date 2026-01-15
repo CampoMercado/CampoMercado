@@ -13,9 +13,10 @@ import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 type ProductCardProps = {
   product: Product;
   marketProducts: TickerProduct[];
+  marketOpen: boolean;
 };
 
-export function ProductCard({ product, marketProducts }: ProductCardProps) {
+export function ProductCard({ product, marketProducts, marketOpen }: ProductCardProps) {
   const [isChartOpen, setChartOpen] = useState(false);
 
   const productAnalysis = useMemo(() => {
@@ -30,7 +31,6 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
     const change = currentPrice - prevPrice;
     const changePercent = prevPrice === 0 ? 0 : (change / prevPrice) * 100;
     
-    // Simplified volatility: it's just the percentage change between last two prices.
     const volatility = Math.abs(changePercent);
 
     const relevantMarketPrices = marketProducts
@@ -71,6 +71,10 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
       </div>
     );
   };
+  
+  const lastUpdateLabel = marketOpen 
+    ? format(new Date(lastUpdate), "d MMM, HH:mm", { locale: es })
+    : 'Precio de Cierre';
 
   return (
     <>
@@ -84,7 +88,7 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
             ${currentPrice.toLocaleString()}
           </span>
            <div className="text-xs text-muted-foreground mt-1 text-right">
-              {format(new Date(lastUpdate), "d MMM, HH:mm", { locale: es })}
+              {lastUpdateLabel}
             </div>
         </TableCell>
         <TableCell className="text-right py-3 px-2 w-[100px]">
@@ -93,7 +97,7 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
         <TableCell className="py-3 px-2 w-[160px] hidden md:table-cell">
            <div className="flex items-center justify-between">
              <div className="text-xs text-muted-foreground">
-                {prevPriceData ? format(new Date(prevPriceData.date), "d MMM, HH:mm", { locale: es }) : 'Precio Ant.'}:
+                {prevPriceData ? format(new Date(prevPriceData.date), "d MMM", { locale: es }) : 'Precio Ant.'}:
             </div>
             <div className="text-sm font-mono text-green-400">${prevPrice.toLocaleString()}</div>
           </div>

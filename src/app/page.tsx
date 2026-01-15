@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { MarketSummary } from '@/components/market-summary';
+import { MarketStatus } from '@/components/market-status';
 
 type View = 'prices' | 'chart' | 'summary' | 'availability';
 
@@ -27,6 +28,7 @@ export default function Home() {
   const [stalls] = useState<Stall[]>(mockStalls);
   const [activeView, setActiveView] = useState<View>('prices');
   const [appState, setAppState] = useState('welcome'); // 'welcome', 'loading', 'ready'
+  const [marketOpen, setMarketOpen] = useState(true); // Default to open, will be updated
 
   useEffect(() => {
     const welcomeShown = sessionStorage.getItem('welcomeShown');
@@ -141,7 +143,7 @@ export default function Home() {
             <TableRow className="border-green-800/50 hover:bg-gray-900/50 text-xs uppercase">
               <TableHead className="text-green-300 px-2">Producto</TableHead>
               <TableHead className="text-right text-green-300 px-2">
-                Precio y Actualización
+                Último Precio
               </TableHead>
               <TableHead className="text-right text-green-300 px-2 w-[100px]">
                 Var.
@@ -161,6 +163,7 @@ export default function Home() {
                 key={product.id}
                 product={product}
                 marketProducts={allProducts}
+                marketOpen={marketOpen}
               />
             ))}
           </TableBody>
@@ -186,9 +189,12 @@ export default function Home() {
       <main className="flex-grow container py-8 space-y-8">
         <div>
           <div className="mb-6">
-            <h1 className="text-4xl lg:text-6xl font-headline tracking-widest text-green-300">
-              MERCADO DIARIO
-            </h1>
+            <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+                 <h1 className="text-4xl lg:text-6xl font-headline tracking-widest text-green-300">
+                    MERCADO DIARIO
+                 </h1>
+                 <MarketStatus onStatusChange={setMarketOpen} />
+            </div>
             <p className="text-green-500 mt-2 text-sm tracking-wider">
               MERCADO COOPERATIVO DE GUYAMALLÉN
             </p>
