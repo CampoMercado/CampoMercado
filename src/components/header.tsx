@@ -16,8 +16,9 @@ export function Header() {
   const isAdminPage = pathname.startsWith('/admin');
 
   const handleSignOut = async () => {
+    if(!auth) return;
     await signOut(auth);
-    router.push('/');
+    router.push('/login');
   };
 
   return (
@@ -34,7 +35,22 @@ export function Header() {
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center">
-            {isAdminPage && user ? (
+            {user && (
+                 <Button
+                    asChild
+                    variant="ghost"
+                    className={cn(
+                    'text-green-400 hover:bg-green-900 hover:text-green-200',
+                    isAdminPage && 'bg-green-800/80 text-green-100'
+                    )}
+                >
+                    <Link href="/admin">
+                    <UserCog className="h-5 w-5" />
+                    <span className="ml-2 hidden sm:inline">Admin</span>
+                    </Link>
+                </Button>
+            )}
+            {user && (
               <Button
                 variant="ghost"
                 className="text-red-400 hover:bg-red-900 hover:text-red-200"
@@ -42,20 +58,6 @@ export function Header() {
               >
                 <LogOut className="h-5 w-5" />
                 <span className="ml-2 hidden sm:inline">Cerrar Sesión</span>
-              </Button>
-            ) : (
-              <Button
-                asChild
-                variant="ghost"
-                className={cn(
-                  'text-green-400 hover:bg-green-900 hover:text-green-200',
-                  isAdminPage && 'bg-green-800/80 text-green-100'
-                )}
-              >
-                <Link href="/admin">
-                  <UserCog className="h-5 w-5" />
-                  <span className="ml-2 hidden sm:inline">Admin</span>
-                </Link>
               </Button>
             )}
           </nav>

@@ -17,6 +17,7 @@ export default function AdminLayout({
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const [year, setYear] = useState(new Date().getFullYear());
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -27,17 +28,36 @@ export default function AdminLayout({
 
     if (!user) {
       router.push('/login'); // Not logged in
-    } else if (!ADMIN_EMAILS.includes(user.email || '')) {
-      router.push('/'); // Logged in but not an admin
+    } else {
+      const authorized = ADMIN_EMAILS.includes(user.email || '');
+      setIsAuthorized(authorized);
     }
   }, [user, isUserLoading, router]);
   
-  // Show loading skeleton while checking auth and admin status
-  if (isUserLoading || !user || !ADMIN_EMAILS.includes(user.email || '')) {
+  // Show loading skeleton while checking auth
+  if (isUserLoading || !user) {
     return <LoadingSkeleton />;
   }
 
-  // Render admin content if checks pass
+  // Show unauthorized message if not an admin
+  if (!isAuthorized) {
+    return (
+        <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow container py-8">
+                <h1 className="text-4xl font-headline font-bold">Acceso Denegado</h1>
+                <p className="text-muted-foreground mt-1">
+                    No tienes permisos para acceder a esta sección.
+                </p>
+            </main>
+             <footer className="container py-6 text-center text-muted-foreground text-sm">
+                {`© ${year} Campo Mercado.`}
+            </footer>
+        </div>
+    )
+  }
+
+  // Render admin content if authorized
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
