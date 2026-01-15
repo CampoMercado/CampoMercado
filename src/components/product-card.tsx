@@ -1,15 +1,14 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { PriceChart } from './price-chart';
 import type { Product, TickerProduct, PriceHistory } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { ArrowDown, ArrowUp, BarChart2, Minus } from 'lucide-react';
+import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
 type ProductCardProps = {
   product: Product;

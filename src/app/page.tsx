@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { MarketNews } from '@/components/market-news';
 
 type View = 'prices' | 'chart' | 'summary' | 'sector';
 
@@ -132,6 +133,7 @@ export default function Home() {
                 <TableHead className="text-right text-green-300 px-2 w-[100px]">Var. (7d)</TableHead>
                 <TableHead className="text-green-300 px-2 w-[160px] hidden md:table-cell">Análisis</TableHead>
                 <TableHead className="text-green-300 px-2 w-[160px] hidden lg:table-cell">Mercado</TableHead>
+                <TableHead className="w-[120px] hidden sm:table-cell py-3 px-2"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -180,7 +182,16 @@ export default function Home() {
           
           {activeView === 'prices' && <StallsDisplay products={aggregatedProducts} allProducts={allProducts} />}
           {activeView === 'chart' && <BrokerChart products={aggregatedProducts} />}
-          {activeView === 'summary' && <MarketAnalysis stalls={stalls} />}
+          {activeView === 'summary' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <MarketAnalysis stalls={stalls} />
+              </div>
+              <div>
+                <MarketNews />
+              </div>
+            </div>
+          )}
           {activeView === 'sector' && <SectorAnalysis stalls={stalls} />}
         </div>
       </main>
