@@ -102,7 +102,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
   const PnlIcon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
 
   return (
-    <Card className="flex flex-col bg-card/50 hover:bg-card/80 transition-colors duration-300">
+    <Card className="flex flex-col bg-card/80 hover:bg-card/100 hover:border-primary/50 transition-all duration-300 border">
       <CardHeader>
         <div className="flex justify-between items-start">
             <div>
@@ -132,7 +132,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
            tooltip={`$${(produce.priceHistory[0]?.price ?? 0).toLocaleString()} precio de mercado actual por cajón`}
         />
       </CardContent>
-      <CardFooter className="flex-col items-start pt-4 border-t mt-auto">
+      <CardFooter className="flex-col items-start pt-4 border-t mt-auto bg-muted/30">
         <div className="flex justify-between items-center w-full">
             <div className="text-sm font-semibold flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-muted-foreground" />

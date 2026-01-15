@@ -61,7 +61,7 @@ export default function DashboardPage() {
         ...item,
         produce: produceInfo,
       };
-    }).sort((a,b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime());
+    }).sort((a,b) => (a.produce?.name || '').localeCompare(b.produce?.name || ''));
   }, [inventory, aggregatedProducts]);
 
   const isLoading = isUserLoading || isLoadingProfile || isLoadingInventory || isLoadingProduces || isLoadingPrices;
@@ -71,9 +71,10 @@ export default function DashboardPage() {
   }
 
   if (!userProfile) {
+    // This can be a loading state or a message if the profile is unexpectedly missing
     return (
       <div className="flex items-center justify-center h-full">
-        <p>Cargando perfil...</p>
+        <p>Cargando perfil de usuario...</p>
       </div>
     );
   }
