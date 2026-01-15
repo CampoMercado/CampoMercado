@@ -83,12 +83,12 @@ export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
 
   return (
     <div className="space-y-8">
-      <h2 className="text-3xl font-headline text-green-300 border-b border-green-800 pb-2 mb-6">
+      <h2 className="text-3xl font-headline text-green-300 pb-2 mb-6">
         Análisis por Sector
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {sectorAnalysis.map(sector => (
-          <Card key={sector.name} className="bg-gray-900/50 border-green-800 text-green-400 flex flex-col">
+          <Card key={sector.name} className="bg-gray-900/50 border-green-800/50 text-green-400 flex flex-col">
             <CardHeader>
               <CardTitle className="text-xl text-green-300">{sector.name}</CardTitle>
             </CardHeader>
@@ -104,7 +104,7 @@ export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
                 </div>
               </div>
               
-              <div className="border-t border-green-800/50 pt-4 space-y-3">
+              <div className="border-t border-green-800/50 pt-4 mt-4 space-y-3">
                 {sector.topPerformer && (
                    <div>
                      <CardDescription className="text-xs text-green-500 mb-1 flex items-center gap-2"><TrendingUp size={14}/> Mejor Rendimiento</CardDescription>

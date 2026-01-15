@@ -60,15 +60,13 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
   if (!productAnalysis) return null;
 
   const { currentPrice, dailyChangePercent, weeklyChangePercent, volatility, movingAverage7d, marketMin, marketMax } = productAnalysis;
-  const isUp = dailyChangePercent > 0;
-  const isDown = dailyChangePercent < 0;
 
   const ChangeIndicator = ({ value }: { value: number }) => {
     const isUp = value > 0;
     const isDown = value < 0;
     const Icon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
     return (
-      <div className={cn('flex items-center justify-end gap-1 text-xs', isUp && 'text-success', isDown && 'text-danger')}>
+      <div className={cn('flex items-center justify-end gap-1 text-xs font-mono', isUp && 'text-success', isDown && 'text-danger')}>
         <Icon size={12} />
         <span>{value.toFixed(1)}%</span>
       </div>
@@ -77,54 +75,54 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
 
   return (
     <>
-      <TableRow className="border-green-900 font-mono">
-        <TableCell className="py-2 px-2">
+      <TableRow className="border-green-900/50 hover:bg-green-900/10">
+        <TableCell className="py-3 px-2">
           <div className="font-bold text-base text-green-300">{product.name}</div>
           <div className="text-xs text-green-500">{product.variety}</div>
         </TableCell>
-        <TableCell className="text-right py-2 px-2">
-          <span className="text-2xl font-bold text-green-200">
+        <TableCell className="text-right py-3 px-2">
+          <span className="text-2xl font-mono text-green-200">
             ${currentPrice.toLocaleString()}
           </span>
         </TableCell>
-        <TableCell className="text-right py-2 px-2 w-[100px]">
+        <TableCell className="text-right py-3 px-2 w-[100px]">
           <div className="font-medium">
-            <div className="text-sm">Diario</div>
+            <div className="text-sm text-muted-foreground">Diario</div>
             <ChangeIndicator value={dailyChangePercent} />
           </div>
         </TableCell>
-        <TableCell className="text-right py-2 px-2 w-[100px]">
+        <TableCell className="text-right py-3 px-2 w-[100px]">
           <div className="font-medium">
-            <div className="text-sm">Semanal</div>
+            <div className="text-sm text-muted-foreground">Semanal</div>
             <ChangeIndicator value={weeklyChangePercent} />
           </div>
         </TableCell>
-        <TableCell className="py-2 px-2 w-[160px] hidden md:table-cell">
+        <TableCell className="py-3 px-2 w-[160px] hidden md:table-cell">
           <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">PPM (7d):</div>
-            <div className="text-sm font-bold text-green-400">${movingAverage7d.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}</div>
+            <div className="text-sm font-mono text-green-400">${movingAverage7d.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}</div>
           </div>
            <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">Volatilidad:</div>
-            <div className="text-sm font-bold text-accent">{volatility.toFixed(1)}%</div>
+            <div className="text-sm font-mono text-accent">{volatility.toFixed(1)}%</div>
           </div>
         </TableCell>
-         <TableCell className="py-2 px-2 w-[160px] hidden lg:table-cell">
+         <TableCell className="py-3 px-2 w-[160px] hidden lg:table-cell">
           <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">Mín. Mercado:</div>
-            <div className="text-sm font-bold text-danger">${marketMin.toLocaleString()}</div>
+            <div className="text-sm font-mono text-danger">${marketMin.toLocaleString()}</div>
           </div>
            <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">Máx. Mercado:</div>
-            <div className="text-sm font-bold text-success">${marketMax.toLocaleString()}</div>
+            <div className="text-sm font-mono text-success">${marketMax.toLocaleString()}</div>
           </div>
         </TableCell>
-        <TableCell className="w-[120px] hidden sm:table-cell py-2 px-2">
+        <TableCell className="w-[120px] hidden sm:table-cell py-3 px-2">
           <div className="mx-auto">
             <PriceChart product={product} simple />
           </div>
         </TableCell>
-        <TableCell className="text-right py-2 px-2">
+        <TableCell className="text-right py-3 px-2">
           <Button
             variant="ghost"
             size="sm"

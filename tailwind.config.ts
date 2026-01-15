@@ -19,7 +19,7 @@ export default {
       fontFamily: {
         body: ['"Space Mono"', 'monospace'],
         headline: ['"Major Mono Display"', 'monospace'],
-        code: ['monospace'],
+        mono: ['"Space Mono"', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -138,5 +138,6 @@ export default {
   },
   plugins: [
     require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
   ],
 } satisfies Config;

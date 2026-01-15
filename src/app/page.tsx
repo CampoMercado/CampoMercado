@@ -8,7 +8,7 @@ import { PriceTicker } from '@/components/price-ticker';
 import { StallsDisplay } from '@/components/stalls-display';
 import { MarketAnalysis } from '@/components/market-analysis';
 import { SectorAnalysis } from '@/components/sector-analysis';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 
 export default function Home() {
   const [stalls, setStalls] = useState<Stall[]>(mockStalls);
@@ -22,39 +22,33 @@ export default function Home() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-black text-green-400 font-mono">
+    <div className="flex flex-col min-h-screen bg-black text-green-400">
       <Header />
       <PriceTicker products={allProducts} />
 
-      <main className="flex-grow container py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl lg:text-5xl font-headline font-bold tracking-widest text-green-300">
-            MERCADO DIARIO
-          </h1>
-          <p className="text-green-500 mt-2">
-            MERCADO COOPERATIVO DE GUAYMALLÉN
-          </p>
+      <main className="flex-grow container py-8 space-y-12">
+        <div>
+          <div className="mb-8">
+            <h1 className="text-4xl lg:text-6xl font-headline tracking-widest text-green-300">
+              MERCADO DIARIO
+            </h1>
+            <p className="text-green-500 mt-2 text-sm tracking-wider">
+              MERCADO COOPERATIVO DE GUAYMALLÉN
+            </p>
+          </div>
+          <StallsDisplay stalls={stalls} allProducts={allProducts} />
         </div>
 
-        <Tabs defaultValue="market">
-          <TabsList className="mb-4">
-            <TabsTrigger value="market">Mercado Diario</TabsTrigger>
-            <TabsTrigger value="analysis">Análisis de Mercado</TabsTrigger>
-            <TabsTrigger value="sector-analysis">Análisis Sectorial</TabsTrigger>
-          </TabsList>
-          <TabsContent value="market">
-            <StallsDisplay stalls={stalls} allProducts={allProducts} />
-          </TabsContent>
-          <TabsContent value="analysis">
-            <MarketAnalysis stalls={stalls} />
-          </TabsContent>
-          <TabsContent value="sector-analysis">
-            <SectorAnalysis stalls={stalls} />
-          </TabsContent>
-        </Tabs>
+        <Separator className="bg-green-800/50" />
+
+        <MarketAnalysis stalls={stalls} />
+
+        <Separator className="bg-green-800/50" />
+
+        <SectorAnalysis stalls={stalls} />
       </main>
 
-      <footer className="container py-6 text-center text-green-600 text-xs">
+      <footer className="container py-6 text-center text-green-600/50 text-xs">
         © {new Date().getFullYear()} CUYOCROPS. TODOS LOS DERECHOS RESERVADOS.
       </footer>
     </div>

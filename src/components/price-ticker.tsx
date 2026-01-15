@@ -26,19 +26,19 @@ export function PriceTicker({ products }: { products: TickerProduct[] }) {
   const extendedTickerItems = [...tickerItems, ...tickerItems];
 
   return (
-    <div className="relative flex overflow-hidden bg-gray-900 text-green-400 border-y border-green-800 py-2">
+    <div className="relative flex overflow-hidden bg-gray-900/80 text-green-400 border-y border-green-800 py-2">
       <div className="flex animate-marquee whitespace-nowrap">
         {extendedTickerItems.map((item, index) => (
-          <div key={`item1-${index}`} className="flex items-center mx-4">
-            <span className="font-bold uppercase text-sm text-green-300">{item.name}</span>
-            <span className="mx-2 text-base text-green-200">
+          <div key={`item1-${index}`} className="flex items-center mx-4 text-xs">
+            <span className="font-bold uppercase text-green-300">{item.name}</span>
+            <span className="mx-2 text-base font-mono text-green-200">
               ${item.price.toLocaleString()}
             </span>
             <span
               className={cn(
                 'flex items-center',
-                item.isUp && 'text-green-500',
-                item.isDown && 'text-red-500'
+                item.isUp && 'text-success',
+                item.isDown && 'text-danger'
               )}
             >
               {item.isUp && <ArrowUp className="h-4 w-4" />}
@@ -49,16 +49,16 @@ export function PriceTicker({ products }: { products: TickerProduct[] }) {
       </div>
       <div className="absolute top-0 flex animate-marquee2 whitespace-nowrap py-2">
         {extendedTickerItems.map((item, index) => (
-          <div key={`item2-${index}`} className="flex items-center mx-4">
-            <span className="font-bold uppercase text-sm text-green-300">{item.name}</span>
-            <span className="mx-2 text-base text-green-200">
+          <div key={`item2-${index}`} className="flex items-center mx-4 text-xs">
+            <span className="font-bold uppercase text-green-300">{item.name}</span>
+            <span className="mx-2 text-base font-mono text-green-200">
               ${item.price.toLocaleString()}
             </span>
              <span
               className={cn(
                 'flex items-center',
-                item.isUp && 'text-green-500',
-                item.isDown && 'text-red-500'
+                item.isUp && 'text-success',
+                item.isDown && 'text-danger'
               )}
             >
               {item.isUp && <ArrowUp className="h-4 w-4" />}
