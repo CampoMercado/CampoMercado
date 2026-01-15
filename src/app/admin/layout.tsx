@@ -27,7 +27,7 @@ export default function AdminLayout({
     if (isUserLoading) return; // Wait until user status is resolved
 
     if (!user) {
-      router.push('/login'); // Not logged in
+      router.push('/login'); // Not logged in, redirect
     } else {
       const authorized = ADMIN_EMAILS.includes(user.email || '');
       setIsAuthorized(authorized);

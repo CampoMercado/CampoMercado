@@ -32,8 +32,8 @@ export default function Home() {
   const router = useRouter();
   const firestore = useFirestore();
 
-  const producesRef = useMemoFirebase(() => collection(firestore, 'produces'), [firestore]);
-  const pricesRef = useMemoFirebase(() => collection(firestore, 'prices'), [firestore]);
+  const producesRef = useMemoFirebase(() => user ? collection(firestore, 'produces') : null, [firestore, user]);
+  const pricesRef = useMemoFirebase(() => user ? collection(firestore, 'prices') : null, [firestore, user]);
   
   const { data: producesData, isLoading: isLoadingProduces } = useCollection<Produce>(producesRef);
   const { data: pricesData, isLoading: isLoadingPrices } = useCollection<Price>(pricesRef);

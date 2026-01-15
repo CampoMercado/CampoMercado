@@ -13,6 +13,7 @@ import {
   useCollection,
   useFirestore,
   useMemoFirebase,
+  useUser,
 } from '@/firebase';
 import { deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Produce, Price, AggregatedProduct } from '@/lib/types';
@@ -55,9 +56,10 @@ type NewProductFormData = z.infer<typeof newProductSchema>;
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 export default function AdminPage() {
+  const { user } = useUser();
   const firestore = useFirestore();
-  const producesRef = useMemoFirebase(() => collection(firestore, 'produces'), [firestore]);
-  const pricesRef = useMemoFirebase(() => collection(firestore, 'prices'), [firestore]);
+  const producesRef = useMemoFirebase(() => user ? collection(firestore, 'produces') : null, [firestore, user]);
+  const pricesRef = useMemoFirebase(() => user ? collection(firestore, 'prices') : null, [firestore, user]);
   
   const { data: producesData, isLoading: isLoadingProduces } = useCollection<Produce>(producesRef);
   const { data: pricesData, isLoading: isLoadingPrices } = useCollection<Price>(pricesRef);
@@ -115,6 +117,7 @@ export default function AdminPage() {
   });
 
   const updateProductPrice = (productId: string, newPrice: number) => {
+    if (!pricesRef) return;
     const newPriceEntry = {
       produceId: productId,
       price: newPrice,
@@ -161,6 +164,8 @@ export default function AdminPage() {
   };
 
   const handleAddNewProduct = (data: NewProductFormData) => {
+    if (!producesRef || !pricesRef) return;
+
     const newProduce = {
         name: data.name,
         variety: data.variety || '',
@@ -169,7 +174,7 @@ export default function AdminPage() {
     };
 
     addDocumentNonBlocking(producesRef, newProduce).then(docRef => {
-        if(docRef) {
+        if(docRef && pricesRef) {
             const newPriceEntry = {
                 produceId: docRef.id,
                 price: data.price,
@@ -187,7 +192,7 @@ export default function AdminPage() {
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    if (!firestore) return;
+    if (!firestore || !pricesRef) return;
     try {
       const batch = writeBatch(firestore);
 
