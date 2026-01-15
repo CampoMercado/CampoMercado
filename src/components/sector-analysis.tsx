@@ -13,9 +13,11 @@ type ProductMetric = {
 
 type SectorData = {
   name: string;
-  avgChange: number;
+  productsUp: number;
+  productsDown: number;
   topPerformer: ProductMetric | null;
   worstPerformer: ProductMetric | null;
+  totalProducts: number;
 };
 
 const calculateMetrics = (product: Product): ProductMetric => {
@@ -49,7 +51,7 @@ const ChangeIndicator = ({ value, label }: { value: number, label: string }) => 
 };
 
 export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
-  const sectorAnalysis = useMemo(() => {
+  const sectorAnalysis: SectorData[] = useMemo(() => {
     const allProducts = stalls.flatMap(stall => stall.products);
     const productsByCategory = allProducts.reduce((acc, product) => {
       if (!acc[product.category]) {
@@ -62,15 +64,21 @@ export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
     return Object.entries(productsByCategory).map(([category, products]) => {
       const productMetrics = products.map(calculateMetrics);
       
-      const avgChange = productMetrics.reduce((sum, p) => sum + p.change, 0) / productMetrics.length;
+      const productsUp = productMetrics.filter(p => p.change > 0).length;
+      const productsDown = productMetrics.filter(p => p.change < 0).length;
 
       const sortedByChange = [...productMetrics].sort((a, b) => b.change - a.change);
 
+      const topPerformer = sortedByChange.find(p => p.change > 0) ?? null;
+      const worstPerformer = sortedByChange.find(p => p.change < 0) ?? null;
+
       return {
         name: category,
-        avgChange,
-        topPerformer: sortedByChange[0] ?? null,
-        worstPerformer: sortedByChange[sortedByChange.length - 1] ?? null,
+        productsUp,
+        productsDown,
+        topPerformer,
+        worstPerformer,
+        totalProducts: products.length,
       };
     });
   }, [stalls]);
@@ -87,37 +95,34 @@ export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
               <CardTitle className="text-xl text-green-300">{sector.name}</CardTitle>
                <div className="flex items-center text-sm pt-1">
                 <span className="text-muted-foreground">Rendimiento:</span>
-                <span className={cn(
-                    "font-bold font-mono flex items-center ml-2",
-                    sector.avgChange > 0 && 'text-success',
-                    sector.avgChange < 0 && 'text-danger'
-                )}>
-                    {sector.avgChange > 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-                    {sector.avgChange.toFixed(2)}%
+                <span className="font-bold font-mono flex items-center ml-2 gap-3">
+                    <span className="flex items-center text-success"><ArrowUp className="h-4 w-4 mr-1"/> {sector.productsUp}</span>
+                    <span className="flex items-center text-danger"><ArrowDown className="h-4 w-4 mr-1"/> {sector.productsDown}</span>
                 </span>
                </div>
             </CardHeader>
             <CardContent className="space-y-4 flex-grow">
-              <div className="border-t border-green-800/50 pt-4 space-y-3">
-                {sector.topPerformer && (
-                   <div>
-                     <CardDescription className="text-xs text-green-500 mb-1 flex items-center gap-2"><TrendingUp size={14}/> Mejor Rendimiento</CardDescription>
-                     <ChangeIndicator value={sector.topPerformer.change} label={sector.topPerformer.name} />
-                   </div>
-                )}
-                {sector.worstPerformer && sector.topPerformer?.name !== sector.worstPerformer.name && (
-                  <div>
-                    <CardDescription className="text-xs text-red-500/80 mb-1 flex items-center gap-2"><TrendingDown size={14}/> Peor Rendimiento</CardDescription>
-                    <ChangeIndicator value={sector.worstPerformer.change} label={sector.worstPerformer.name} />
-                  </div>
-                )}
-                 {sector.topPerformer?.name === sector.worstPerformer?.name && sector.topPerformer && (
-                    <div>
-                        <CardDescription className="text-xs text-muted-foreground mb-1 flex items-center gap-2"><Activity size={14}/> Sin Cambios</CardDescription>
-                        <p className="text-sm text-muted-foreground">No hubo cambios significativos en este sector.</p>
+                {sector.productsUp === 0 && sector.productsDown === 0 ? (
+                     <div className="border-t border-green-800/50 pt-4 flex items-center text-muted-foreground text-sm gap-2">
+                        <Activity size={14}/>
+                        <span>No hubo cambios significativos hoy.</span>
+                    </div>
+                ) : (
+                    <div className="border-t border-green-800/50 pt-4 space-y-3">
+                        {sector.topPerformer && (
+                        <div>
+                            <CardDescription className="text-xs text-green-500 mb-1 flex items-center gap-2"><TrendingUp size={14}/> Mejor Rendimiento</CardDescription>
+                            <ChangeIndicator value={sector.topPerformer.change} label={sector.topPerformer.name} />
+                        </div>
+                        )}
+                        {sector.worstPerformer && (
+                        <div>
+                            <CardDescription className="text-xs text-red-500/80 mb-1 flex items-center gap-2"><TrendingDown size={14}/> Peor Rendimiento</CardDescription>
+                            <ChangeIndicator value={sector.worstPerformer.change} label={sector.worstPerformer.name} />
+                        </div>
+                        )}
                     </div>
                 )}
-              </div>
             </CardContent>
           </Card>
         ))}
