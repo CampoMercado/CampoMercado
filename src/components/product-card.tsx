@@ -34,13 +34,9 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
     
     const volatility = Math.abs(changePercent);
 
-    const relevantMarketPrices = marketProducts
-      .filter(p => p.name === product.name && p.variety === product.variety)
-      .map(p => p.priceHistory.at(0)?.price ?? 0)
-      .filter(price => price > 0);
-
-    const marketMin = relevantMarketPrices.length > 0 ? Math.min(...relevantMarketPrices) : 0;
-    const marketMax = relevantMarketPrices.length > 0 ? Math.max(...relevantMarketPrices) : 0;
+    const allPrices = product.priceHistory.map(p => p.price);
+    const historicalMin = allPrices.length > 0 ? Math.min(...allPrices) : 0;
+    const historicalMax = allPrices.length > 0 ? Math.max(...allPrices) : 0;
 
     return {
       currentPrice,
@@ -49,14 +45,14 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
       prevPrice,
       changePercent,
       volatility,
-      marketMin,
-      marketMax,
+      historicalMin,
+      historicalMax,
     };
   }, [product, marketProducts]);
 
   if (!productAnalysis) return null;
 
-  const { currentPrice, lastUpdate, changePercent, volatility, prevPriceData, prevPrice, marketMin, marketMax } = productAnalysis;
+  const { currentPrice, lastUpdate, changePercent, volatility, prevPriceData, prevPrice, historicalMin, historicalMax } = productAnalysis;
 
   const ChangeIndicator = ({ value, label }: { value: number, label: string }) => {
     const isUp = value > 0;
@@ -116,12 +112,12 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
         </TableCell>
          <TableCell className="py-3 px-4 w-[160px]">
           <div className="flex items-center justify-between">
-            <div className="text-xs text-muted-foreground">Mín. Mercado:</div>
-            <div className="text-sm font-mono text-danger">${marketMin.toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">Mín. Histórico:</div>
+            <div className="text-sm font-mono text-danger">${historicalMin.toLocaleString()}</div>
           </div>
            <div className="flex items-center justify-between">
-            <div className="text-xs text-muted-foreground">Máx. Mercado:</div>
-            <div className="text-sm font-mono text-success">${marketMax.toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">Máx. Histórico:</div>
+            <div className="text-sm font-mono text-success">${historicalMax.toLocaleString()}</div>
           </div>
         </TableCell>
         <TableCell className="py-3 px-4 w-[160px]">

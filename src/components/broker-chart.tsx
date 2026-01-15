@@ -97,20 +97,14 @@ const BrokerChartComponent = ({ products }: { products: AggregatedProduct[] }) =
     });
 
     const sortedTimestamps = Array.from(allTimestamps).sort((a, b) => a - b);
-
-    const lastPrices: Record<string, number> = {};
+    
+    const lastPrices: Record<string, number | null> = {};
     selectedProducts.forEach(prodId => {
-      const product = products.find(p => p.id === prodId);
-      if (product && product.priceHistory.length > 0) {
-        // Find the earliest price to start with
-        const earliestPrice = [...product.priceHistory].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
-        lastPrices[prodId] = earliestPrice.price;
-      }
+      lastPrices[prodId] = null;
     });
 
-
     const finalChartData = sortedTimestamps.map(timestamp => {
-      const entry: Record<string, number | Date> = {
+      const entry: Record<string, number | Date | null> = {
         date: new Date(timestamp),
       };
 
