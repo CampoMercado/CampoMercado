@@ -27,7 +27,6 @@ import {
   ArrowDown,
   ArrowUp,
   Minus,
-  Package,
   MoreVertical,
   Trash2,
   Move,
@@ -58,11 +57,17 @@ const FinancialStat = ({ label, value, className }: { label: string; value: stri
 
 
 export function InventoryCard({ item, onDeleteItem, onSplitStock, onRecordSale }: InventoryCardProps) {
-  const { produce, quantity, purchasePrice, purchaseDate, status } = item;
+  const { produce, quantity, purchasePrice, purchaseDate, status, associatedCosts } = item;
   
   const [isDeleteOpen, setDeleteOpen] = useState(false);
   const [isMoveOpen, setMoveOpen] = useState(false);
   const [isSaleOpen, setSaleOpen] = useState(false);
+
+  const totalAssociatedCosts = useMemo(() => {
+    return (associatedCosts || []).reduce((acc, cost) => acc + cost.amount, 0);
+  }, [associatedCosts]);
+
+  const totalPurchaseCostPerUnit = purchasePrice + totalAssociatedCosts;
 
   const valuation = useMemo(() => {
     if (!produce || produce.priceHistory.length === 0) {
@@ -74,9 +79,9 @@ export function InventoryCard({ item, onDeleteItem, onSplitStock, onRecordSale }
       };
     }
     const marketPrice = produce.priceHistory[0].price;
-    const pnlPerUnit = marketPrice - purchasePrice;
+    const pnlPerUnit = marketPrice - totalPurchaseCostPerUnit;
     const pnlTotal = pnlPerUnit * quantity;
-    const pnlPercent = purchasePrice > 0 ? (pnlPerUnit / purchasePrice) * 100 : 0;
+    const pnlPercent = totalPurchaseCostPerUnit > 0 ? (pnlPerUnit / totalPurchaseCostPerUnit) * 100 : 0;
 
     return {
       marketPrice,
@@ -84,7 +89,7 @@ export function InventoryCard({ item, onDeleteItem, onSplitStock, onRecordSale }
       pnlTotal,
       pnlPercent,
     };
-  }, [produce, quantity, purchasePrice]);
+  }, [produce, quantity, totalPurchaseCostPerUnit]);
 
   const { marketPrice, pnlPerUnit, pnlTotal, pnlPercent } = valuation;
 
@@ -159,21 +164,26 @@ export function InventoryCard({ item, onDeleteItem, onSplitStock, onRecordSale }
             </div>
             <div className="col-span-3 space-y-1.5">
                 <FinancialStat 
-                    label="Tu Precio Compra" 
+                    label="Pr. Compra" 
                     value={`$${purchasePrice.toLocaleString()}`}
                 />
-                <FinancialStat 
-                    label="Precio Mercado" 
-                    value={`$${marketPrice.toLocaleString()}`}
+                 <FinancialStat 
+                    label="Costos Adic." 
+                    value={`$${totalAssociatedCosts.toLocaleString()}`}
+                    className="text-amber-400"
+                />
+                 <FinancialStat 
+                    label="Costo Total" 
+                    value={`$${totalPurchaseCostPerUnit.toLocaleString()}`}
+                    className="font-bold"
                 />
                 <Separator className="my-1.5"/>
                 <FinancialStat 
-                    label="G/P Unitario" 
-                    value={`$${pnlPerUnit.toLocaleString()}`}
-                    className={pnlColor}
+                    label="Pr. Mercado" 
+                    value={`$${marketPrice.toLocaleString()}`}
                 />
                  <FinancialStat 
-                    label="G/P Total" 
+                    label="G/P Potencial" 
                     value={`$${pnlTotal.toLocaleString()}`}
                     className={cn("font-bold", pnlColor)}
                 />

@@ -88,9 +88,56 @@
         "status": {
           "type": "string",
           "description": "Current status or location of the inventory item (e.g., En Reserva, Puesto 5)."
+        },
+        "sales": {
+            "type": "array",
+            "description": "A list of sales made from this specific inventory lot.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "quantity": { "type": "number" },
+                    "salePrice": { "type": "number" },
+                    "date": { "type": "string", "format": "date-time" },
+                    "status": { "type": "string", "enum": ["Pagado", "Pendiente"]}
+                },
+                "required": ["quantity", "salePrice", "date", "status"]
+            }
+        },
+        "associatedCosts": {
+            "type": "array",
+            "description": "List of additional one-off costs associated with this inventory lot.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string" },
+                    "amount": { "type": "number" }
+                },
+                "required": ["name", "amount"]
+            }
         }
       },
       "required": ["produceId", "quantity", "purchasePrice", "purchaseDate", "status"]
+    },
+    "Cost": {
+      "title": "Cost",
+      "description": "Represents a reusable, user-defined cost per crate.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the cost (e.g., Flete)." },
+        "amount": { "type": "number", "description": "Cost amount per crate." }
+      },
+      "required": ["name", "amount"]
+    },
+    "Expense": {
+        "title": "Expense",
+        "description": "Represents a general business expense, not tied to a specific crate.",
+        "type": "object",
+        "properties": {
+            "description": { "type": "string" },
+            "amount": { "type": "number" },
+            "date": { "type": "string", "format": "date-time" }
+        },
+        "required": ["description", "amount", "date"]
     }
   },
   "auth": {
@@ -120,6 +167,18 @@
         "$ref": "#/entities/InventoryItem"
       },
       "description": "Stores the inventory items for a specific user."
+    },
+    "/users/{userId}/expenses/{expenseId}": {
+      "schema": {
+        "$ref": "#/entities/Expense"
+      },
+      "description": "Stores the business expenses for a specific user."
+    },
+    "/users/{userId}/costs/{costId}": {
+      "schema": {
+        "$ref": "#/entities/Cost"
+      },
+      "description": "Stores user-defined, reusable costs per crate."
     }
   }
 }

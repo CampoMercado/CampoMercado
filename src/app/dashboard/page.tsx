@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { collection, doc, deleteDoc, updateDoc, arrayUnion, writeBatch } from 'firebase/firestore';
 
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import type { UserProfile, InventoryItem, Produce, Price, Sale } from '@/lib/types';
+import type { UserProfile, InventoryItem, Produce, Price, Sale, Cost } from '@/lib/types';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -15,6 +15,8 @@ import { LoadingSkeleton } from '@/components/loading-skeleton';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { PriceTicker, TopMoversTicker, PricePerKgTicker } from '@/components/price-ticker';
 import { InventorySummary } from '@/components/dashboard/inventory-summary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CostsManager } from '@/components/dashboard/costs-manager';
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -34,6 +36,12 @@ export default function DashboardPage() {
   );
   const { data: inventory, isLoading: isLoadingInventory } =
     useCollection<InventoryItem>(inventoryRef);
+    
+  const costsRef = useMemoFirebase(
+    () => (user ? collection(firestore, `users/${user.uid}/costs`) : null),
+    [firestore, user]
+  );
+  const { data: costs, isLoading: isLoadingCosts } = useCollection<Cost>(costsRef);
 
   const producesRef = useMemoFirebase(
     () => (user ? collection(firestore, 'produces') : null),
@@ -126,12 +134,14 @@ export default function DashboardPage() {
   
     // 2. Create the new item
     const newItemRef = doc(inventoryRef); // Auto-generates a new ID
-    const newItemData = {
-      ...originalItem,
-      id: newItemRef.id, // we will lose this ref but it's ok for now
+    const newItemData: InventoryItem = {
+      produceId: originalItem.produceId,
       quantity: quantityToMove,
+      purchasePrice: originalItem.purchasePrice,
+      purchaseDate: originalItem.purchaseDate,
       status: newStatus,
       sales: [], // New item has no sales history
+      associatedCosts: originalItem.associatedCosts || []
     };
     batch.set(newItemRef, newItemData);
   
@@ -176,7 +186,8 @@ export default function DashboardPage() {
     isLoadingProfile ||
     isLoadingInventory ||
     isLoadingProduces ||
-    isLoadingPrices;
+    isLoadingPrices ||
+    isLoadingCosts;
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -197,46 +208,61 @@ export default function DashboardPage() {
       <PricePerKgTicker products={aggregatedProducts} />
       
       <div className="container py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-headline font-bold">Mi Inventario</h1>
-            <p className="text-muted-foreground mt-1">
-              Gestiona tus compras, ventas y stock en tiempo real.
-            </p>
-          </div>
-          <AddInventoryItemDialog products={aggregatedProducts} />
-        </div>
-
-        {inventoryWithData && inventoryWithData.length > 0 ? (
-          <div className="space-y-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {inventoryWithData.map((item) => (
-                <InventoryCard 
-                    key={item.id} 
-                    item={item} 
-                    onDeleteItem={handleDeleteItem}
-                    onSplitStock={handleSplitStock}
-                    onRecordSale={handleRecordSale}
-                />
-              ))}
+         <Tabs defaultValue="inventory">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-4xl font-headline font-bold">Mi Dashboard</h1>
+              <p className="text-muted-foreground mt-1">
+                Gestiona tus compras, ventas, costos y stock en tiempo real.
+              </p>
             </div>
-            <InventorySummary inventory={inventoryWithData} />
+             <TabsList>
+              <TabsTrigger value="inventory">Mi Inventario</TabsTrigger>
+              <TabsTrigger value="costs">Gestionar Costos</TabsTrigger>
+            </TabsList>
           </div>
-        ) : (
-          <div className="text-center py-16 border-2 border-dashed border-muted rounded-lg">
-            <h3 className="text-xl font-semibold">Tu inventario está vacío</h3>
-            <p className="text-muted-foreground mt-2 mb-6">
-              Comienza por registrar tu primera compra de mercadería.
-            </p>
-            <AddInventoryItemDialog
-              products={aggregatedProducts}
-              buttonVariant="default"
-            >
-              <PlusCircle className="mr-2" />
-              Registrar Primera Compra
-            </AddInventoryItemDialog>
-          </div>
-        )}
+
+          <TabsContent value="inventory">
+             <div className="flex items-center justify-end mb-6">
+                <AddInventoryItemDialog products={aggregatedProducts} costs={costs || []} />
+             </div>
+
+            {inventoryWithData && inventoryWithData.length > 0 ? (
+              <div className="space-y-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {inventoryWithData.map((item) => (
+                    <InventoryCard 
+                        key={item.id} 
+                        item={item} 
+                        onDeleteItem={handleDeleteItem}
+                        onSplitStock={handleSplitStock}
+                        onRecordSale={handleRecordSale}
+                    />
+                  ))}
+                </div>
+                <InventorySummary inventory={inventoryWithData} />
+              </div>
+            ) : (
+              <div className="text-center py-16 border-2 border-dashed border-muted rounded-lg">
+                <h3 className="text-xl font-semibold">Tu inventario está vacío</h3>
+                <p className="text-muted-foreground mt-2 mb-6">
+                  Comienza por registrar tu primera compra de mercadería.
+                </p>
+                <AddInventoryItemDialog
+                  products={aggregatedProducts}
+                  costs={costs || []}
+                  buttonVariant="default"
+                >
+                  <PlusCircle className="mr-2" />
+                  Registrar Primera Compra
+                </AddInventoryItemDialog>
+              </div>
+            )}
+          </TabsContent>
+          <TabsContent value="costs">
+            <CostsManager costs={costs || []} />
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );

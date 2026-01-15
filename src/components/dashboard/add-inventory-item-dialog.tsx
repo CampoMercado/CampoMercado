@@ -9,7 +9,7 @@ import { collection } from 'firebase/firestore';
 
 import { useFirestore, useUser } from '@/firebase';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import type { AggregatedProduct } from '@/lib/types';
+import type { AggregatedProduct, Cost } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
 import { Button, buttonVariants } from '@/components/ui/button';
@@ -39,22 +39,26 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { Checkbox } from '../ui/checkbox';
+import { Separator } from '../ui/separator';
 
 const inventoryItemSchema = z.object({
   produceId: z.string().min(1, 'Debe seleccionar un producto.'),
   quantity: z.coerce.number().positive('La cantidad debe ser mayor a cero.'),
-  purchasePrice: z.coerce.number().positive('El precio de compra debe ser mayor a cero.'),
+  purchasePrice: z.coerce.number().min(0, 'El precio de compra no puede ser negativo.'),
+  costIds: z.array(z.string()).optional(),
 });
 
 type InventoryItemFormData = z.infer<typeof inventoryItemSchema>;
 
 type AddInventoryItemDialogProps = {
   products: AggregatedProduct[];
+  costs: Cost[];
   children?: React.ReactNode;
   buttonVariant?: 'default' | 'outline';
 };
 
-export function AddInventoryItemDialog({ products, children, buttonVariant = 'outline' }: AddInventoryItemDialogProps) {
+export function AddInventoryItemDialog({ products, costs, children, buttonVariant = 'outline' }: AddInventoryItemDialogProps) {
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -66,6 +70,7 @@ export function AddInventoryItemDialog({ products, children, buttonVariant = 'ou
       produceId: '',
       quantity: 1,
       purchasePrice: 0,
+      costIds: [],
     },
   });
 
@@ -74,10 +79,16 @@ export function AddInventoryItemDialog({ products, children, buttonVariant = 'ou
     
     const inventoryRef = collection(firestore, `users/${user.uid}/inventory`);
 
+    const selectedCosts = costs.filter(c => data.costIds?.includes(c.id)).map(c => ({ name: c.name, amount: c.amount }));
+
     const newItem = {
-      ...data,
+      produceId: data.produceId,
+      quantity: data.quantity,
+      purchasePrice: data.purchasePrice,
       purchaseDate: new Date().toISOString(),
       status: 'En Reserva',
+      associatedCosts: selectedCosts,
+      sales: []
     };
 
     addDocumentNonBlocking(inventoryRef, newItem);
@@ -161,6 +172,64 @@ export function AddInventoryItemDialog({ products, children, buttonVariant = 'ou
                 </FormItem>
               )}
             />
+
+            {costs.length > 0 && (
+              <div>
+                <Separator className="my-4" />
+                <FormField
+                  control={form.control}
+                  name="costIds"
+                  render={() => (
+                    <FormItem>
+                      <div className="mb-4">
+                        <FormLabel className="text-base">Costos Adicionales</FormLabel>
+                         <p className="text-sm text-muted-foreground">
+                            Selecciona los costos por cajón a aplicar a este lote.
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        {costs.map((cost) => (
+                          <FormField
+                            key={cost.id}
+                            control={form.control}
+                            name="costIds"
+                            render={({ field }) => {
+                              return (
+                                <FormItem
+                                  key={cost.id}
+                                  className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"
+                                >
+                                    <div className="space-y-0.5">
+                                      <FormLabel>{cost.name}</FormLabel>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                      <span className="font-mono text-foreground">${cost.amount.toLocaleString()}</span>
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(cost.id)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...(field.value || []), cost.id])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                    (value) => value !== cost.id
+                                                  )
+                                                )
+                                          }}
+                                        />
+                                      </FormControl>
+                                    </div>
+                                </FormItem>
+                              )
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
           </form>
         </Form>
         <DialogFooter>

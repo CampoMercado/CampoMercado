@@ -62,6 +62,11 @@ export type Sale = {
     status: 'Pagado' | 'Pendiente';
 };
 
+export type AssociatedCost = {
+  name: string;
+  amount: number;
+}
+
 export type InventoryItem = {
   id: string;
   produceId: string;
@@ -70,10 +75,17 @@ export type InventoryItem = {
   purchaseDate: string;
   status: string;
   sales?: Sale[];
+  associatedCosts?: AssociatedCost[];
 }
 
 export type InventoryItemWithProduct = InventoryItem & {
   produce?: AggregatedProduct;
+}
+
+export type Cost = {
+  id: string;
+  name: string;
+  amount: number;
 }
 
 export type Expense = {

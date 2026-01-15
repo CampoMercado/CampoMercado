@@ -1,8 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import {
   InventoryItemWithProduct,
   InventorySummaryData,
@@ -24,7 +22,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowDown, ArrowUp, Minus, TrendingUp, Banknote, Package, Landmark, Scale, FileClock, HandCoins, PiggyBank, CircleDollarSign } from 'lucide-react';
+import { ArrowDown, ArrowUp, TrendingUp, Banknote, Package, Landmark, Scale, FileClock, HandCoins, PiggyBank, CircleDollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
 
@@ -79,12 +77,15 @@ export function InventorySummary({
 
     inventory.forEach((item) => {
       if (!item.produce) return;
+      
+      const totalAssociatedCostsPerUnit = (item.associatedCosts || []).reduce((acc, cost) => acc + cost.amount, 0);
+      const totalPurchaseCostPerUnit = item.purchasePrice + totalAssociatedCostsPerUnit;
 
       // Metrics for current, unsold inventory
-      const purchaseValue = item.purchasePrice * item.quantity;
+      const investedValueForLot = totalPurchaseCostPerUnit * item.quantity;
       const marketPrice = item.produce.priceHistory[0]?.price || 0;
       const marketValue = marketPrice * item.quantity;
-      currentInvestedCapital += purchaseValue;
+      currentInvestedCapital += investedValueForLot;
       currentStockValue += marketValue;
       
       // Group stock by location/status
@@ -92,13 +93,13 @@ export function InventorySummary({
         stockByLocation[item.status] = { quantity: 0, value: 0 };
       }
       stockByLocation[item.status].quantity += item.quantity;
-      stockByLocation[item.status].value += purchaseValue;
+      stockByLocation[item.status].value += investedValueForLot;
 
       // Metrics for sold inventory
       if (item.sales) {
         item.sales.forEach(sale => {
             const saleTotal = sale.quantity * sale.salePrice;
-            costOfGoodsSold += sale.quantity * item.purchasePrice;
+            costOfGoodsSold += sale.quantity * totalPurchaseCostPerUnit;
 
             if (sale.status === 'Pagado') {
                 totalRevenue += saleTotal;
