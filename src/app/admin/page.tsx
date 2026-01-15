@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -44,7 +44,6 @@ import {
 } from '@/components/ui/select';
 
 const newProductSchema = z.object({
-  stallId: z.string().min(1, 'Debe seleccionar un puesto.'),
   name: z.string().min(1, 'El nombre es requerido.'),
   variety: z.string().min(1, 'La variedad es requerida.'),
   category: z.string().min(1, 'La categoría es requerida.'),
@@ -65,8 +64,20 @@ export default function AdminPage() {
   );
   const { toast } = useToast();
 
+  const allProducts = useMemo(() => {
+      return stalls.flatMap(stall => 
+          stall.products.map(product => ({...product, stallId: stall.id}))
+      );
+  }, [stalls]);
+
   const newProductForm = useForm<NewProductFormData>({
     resolver: zodResolver(newProductSchema),
+    defaultValues: {
+      name: '',
+      variety: '',
+      category: '',
+      price: undefined,
+    }
   });
 
   const updateProductPrice = (stallId: string, productId: string, newPrice: number) => {
@@ -100,16 +111,15 @@ export default function AdminPage() {
     setUpdatingProductId(null);
   };
 
-  const handlePriceUpdate = async (stallId: string, productId: string, newPrice: number) => {
+  const handlePriceUpdate = async (productId: string, newPrice: number) => {
     setUpdatingProductId(productId);
-    const stall = stalls.find((s) => s.id === stallId);
-    const product = stall?.products.find((p) => p.id === productId);
+    const productWithStall = allProducts.find(p => p.id === productId);
 
-    if (!product || !stall) {
+    if (!productWithStall) {
       setUpdatingProductId(null);
       return;
     }
-
+    const { stallId, ...product } = productWithStall;
     const currentPrice = product.priceHistory.at(-1)?.price;
 
     const validationResult = await validatePriceAction({
@@ -133,8 +143,16 @@ export default function AdminPage() {
   };
 
   const handleAddNewProduct = (data: NewProductFormData) => {
+     // For this mock, we'll add the new product to the first stall.
+     // In a real app, you might have a different logic.
+    const targetStallId = stalls[0]?.id;
+    if (!targetStallId) {
+        toast({ title: 'Error', description: 'No hay puestos para agregar productos.', variant: 'destructive'});
+        return;
+    }
+
     const newProduct: Product = {
-      id: `${data.stallId}-${data.name}-${Math.random()}`,
+      id: `prod-${Date.now()}`,
       name: data.name,
       variety: data.variety,
       category: data.category,
@@ -143,7 +161,7 @@ export default function AdminPage() {
 
     setStalls((prev) =>
       prev.map((stall) => {
-        if (stall.id === data.stallId) {
+        if (stall.id === targetStallId) {
           return { ...stall, products: [...stall.products, newProduct] };
         }
         return stall;
@@ -152,12 +170,16 @@ export default function AdminPage() {
 
     toast({
       title: 'Producto Agregado',
-      description: `Se ha agregado "${data.name} (${data.variety})" al puesto.`,
+      description: `Se ha agregado "${data.name} (${data.variety})".`,
     });
     newProductForm.reset();
   };
   
-  const handleDeleteProduct = (stallId: string, productId: string) => {
+  const handleDeleteProduct = (productId: string) => {
+    const productWithStall = allProducts.find(p => p.id === productId);
+    if (!productWithStall) return;
+    const { stallId } = productWithStall;
+
      setStalls((prev) =>
       prev.map((stall) => {
         if (stall.id === stallId) {
@@ -180,11 +202,9 @@ export default function AdminPage() {
           <TabsTrigger value="add">Agregar Producto</TabsTrigger>
         </TabsList>
         <TabsContent value="update">
-          <div className="space-y-8">
-            {stalls.map(stall => (
-              <Card key={stall.id}>
+           <Card>
                 <CardHeader>
-                  <CardTitle>Puesto {stall.number} - {stall.name}</CardTitle>
+                  <CardTitle>Todos los Productos</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
@@ -195,13 +215,13 @@ export default function AdminPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {stall.products.map((product) => (
+                        {allProducts.map((product) => (
                           <UpdatePriceRow
                             key={product.id}
                             product={product}
-                            onUpdate={(productId, newPrice) => handlePriceUpdate(stall.id, productId, newPrice)}
+                            onUpdate={handlePriceUpdate}
                             isUpdating={updatingProductId === product.id}
-                            onDelete={(productId) => handleDeleteProduct(stall.id, productId)}
+                            onDelete={handleDeleteProduct}
                           />
                         ))}
                       </TableBody>
@@ -209,13 +229,11 @@ export default function AdminPage() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
         </TabsContent>
         <TabsContent value="add">
           <Card className="max-w-2xl">
             <CardHeader>
-              <CardTitle>Agregar Nuevo Producto a un Puesto</CardTitle>
+              <CardTitle>Agregar Nuevo Producto al Mercado</CardTitle>
             </CardHeader>
             <CardContent>
               <Form {...newProductForm}>
@@ -223,30 +241,7 @@ export default function AdminPage() {
                   onSubmit={newProductForm.handleSubmit(handleAddNewProduct)}
                   className="space-y-6"
                 >
-                  <FormField
-                    control={newProductForm.control}
-                    name="stallId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Puesto</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Seleccione un puesto" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {stalls.map(stall => (
-                              <SelectItem key={stall.id} value={stall.id}>
-                                Puesto {stall.number} - {stall.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  
                   <FormField
                     control={newProductForm.control}
                     name="name"
