@@ -9,44 +9,43 @@ import { cn } from '@/lib/utils';
 type ProductMetric = {
   name: string;
   weeklyChange: number;
-  volatility: number;
 };
 
 type SectorData = {
   name: string;
   avgWeeklyChange: number;
-  avgVolatility: number;
   topPerformer: ProductMetric | null;
   worstPerformer: ProductMetric | null;
 };
 
 const calculateMetrics = (product: Product): ProductMetric => {
-  const currentPrice = product.priceHistory.at(-1)?.price ?? 0;
-  const weeklyPrice = product.priceHistory.at(-8)?.price ?? product.priceHistory[0]?.price ?? currentPrice;
+  if (product.priceHistory.length < 2) {
+    return { name: `${product.name} (${product.variety})`, weeklyChange: 0 };
+  }
+  const currentPrice = product.priceHistory.at(-1)!.price;
+  const weeklyPriceData = product.priceHistory.find(
+    (p) => new Date(p.date) <= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  );
+  const weeklyPrice = weeklyPriceData?.price ?? product.priceHistory[0].price;
+
   const weeklyChange = weeklyPrice > 0 ? ((currentPrice - weeklyPrice) / weeklyPrice) * 100 : 0;
-  
-  const prices = product.priceHistory.map(h => h.price);
-  const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
-  const stdDev = prices.length > 1 ? Math.sqrt(prices.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / prices.length) : 0;
-  const volatility = mean > 0 ? (stdDev / mean) * 100 : 0;
   
   return {
     name: `${product.name} (${product.variety})`,
     weeklyChange,
-    volatility
   };
 };
 
-const ChangeIndicator = ({ value, label, isPercent = true }: { value: number, label: string, isPercent?: boolean }) => {
+const ChangeIndicator = ({ value, label }: { value: number, label: string }) => {
   const isUp = value > 0;
   const isDown = value < 0;
   const Icon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
   return (
     <div className="flex justify-between items-center text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <div className={cn('flex items-center gap-1 font-mono', isUp && 'text-success', isDown && 'text-danger')}>
+      <span className="text-muted-foreground truncate pr-2">{label}</span>
+      <div className={cn('flex items-center gap-1 font-mono shrink-0', isUp && 'text-success', isDown && 'text-danger')}>
         <Icon size={14} />
-        <span>{value.toFixed(1)}{isPercent ? '%' : ''}</span>
+        <span>{value.toFixed(1)}%</span>
       </div>
     </div>
   );
@@ -67,14 +66,12 @@ export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
       const productMetrics = products.map(calculateMetrics);
       
       const avgWeeklyChange = productMetrics.reduce((sum, p) => sum + p.weeklyChange, 0) / productMetrics.length;
-      const avgVolatility = productMetrics.reduce((sum, p) => sum + p.volatility, 0) / productMetrics.length;
 
       const sortedByChange = [...productMetrics].sort((a, b) => b.weeklyChange - a.weeklyChange);
 
       return {
         name: category,
         avgWeeklyChange,
-        avgVolatility,
         topPerformer: sortedByChange[0] ?? null,
         worstPerformer: sortedByChange[sortedByChange.length - 1] ?? null,
       };
@@ -91,20 +88,20 @@ export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
           <Card key={sector.name} className="bg-gray-900/50 border-green-800/50 text-green-400 flex flex-col">
             <CardHeader>
               <CardTitle className="text-xl text-green-300">{sector.name}</CardTitle>
+               <div className="flex items-center text-sm pt-1">
+                <span className="text-muted-foreground">Rendimiento Semanal:</span>
+                <span className={cn(
+                    "font-bold font-mono flex items-center ml-2",
+                    sector.avgWeeklyChange > 0 && 'text-success',
+                    sector.avgWeeklyChange < 0 && 'text-danger'
+                )}>
+                    {sector.avgWeeklyChange > 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                    {sector.avgWeeklyChange.toFixed(2)}%
+                </span>
+               </div>
             </CardHeader>
             <CardContent className="space-y-4 flex-grow">
-              <div className='space-y-2'>
-                <ChangeIndicator value={sector.avgWeeklyChange} label="Rendimiento (7d)" />
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground">Volatilidad Media</span>
-                  <div className='flex items-center gap-1 font-mono text-accent'>
-                    <Activity size={14} />
-                    <span>{sector.avgVolatility.toFixed(1)}%</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="border-t border-green-800/50 pt-4 mt-4 space-y-3">
+              <div className="border-t border-green-800/50 pt-4 space-y-3">
                 {sector.topPerformer && (
                    <div>
                      <CardDescription className="text-xs text-green-500 mb-1 flex items-center gap-2"><TrendingUp size={14}/> Mejor Rendimiento</CardDescription>
@@ -113,12 +110,17 @@ export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
                 )}
                 {sector.worstPerformer && sector.topPerformer?.name !== sector.worstPerformer.name && (
                   <div>
-                    <CardDescription className="text-xs text-green-500 mb-1 flex items-center gap-2"><TrendingDown size={14}/> Peor Rendimiento</CardDescription>
+                    <CardDescription className="text-xs text-red-500/80 mb-1 flex items-center gap-2"><TrendingDown size={14}/> Peor Rendimiento</CardDescription>
                     <ChangeIndicator value={sector.worstPerformer.weeklyChange} label={sector.worstPerformer.name} />
                   </div>
                 )}
+                 {sector.topPerformer?.name === sector.worstPerformer?.name && sector.topPerformer && (
+                    <div>
+                        <CardDescription className="text-xs text-muted-foreground mb-1 flex items-center gap-2"><Activity size={14}/> Sin Cambios</CardDescription>
+                        <p className="text-sm text-muted-foreground">No hubo cambios significativos en este sector.</p>
+                    </div>
+                )}
               </div>
-
             </CardContent>
           </Card>
         ))}
