@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 
-type View = 'prices' | 'summary' | 'sector' | 'chart';
+type View = 'prices' | 'chart' | 'summary' | 'sector';
 
 export default function Home() {
   const [stalls] = useState<Stall[]>(mockStalls);
