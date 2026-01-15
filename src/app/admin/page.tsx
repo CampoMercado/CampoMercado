@@ -109,7 +109,7 @@ export default function AdminPage() {
       name: '',
       variety: '',
       category: '',
-      price: undefined,
+      price: 0,
     },
   });
 

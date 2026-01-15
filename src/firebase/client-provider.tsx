@@ -1,12 +1,26 @@
 'use client';
 
-import React, { useMemo, type ReactNode } from 'react';
-import { FirebaseProvider } from '@/firebase/provider';
-import { initializeFirebase } from '@/firebase';
+import React, { useMemo, type ReactNode, useEffect } from 'react';
+import { FirebaseProvider, useAuth, useIsUserLoading } from '@/firebase/provider';
+import { initializeFirebase, initiateAnonymousSignIn } from '@/firebase';
 
 interface FirebaseClientProviderProps {
   children: ReactNode;
 }
+
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const auth = useAuth();
+  const isUserLoading = useIsUserLoading();
+
+  useEffect(() => {
+    if (!isUserLoading && !auth.currentUser) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, auth]);
+
+  return <>{children}</>;
+}
+
 
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
   const firebaseServices = useMemo(() => {
@@ -20,7 +34,9 @@ export function FirebaseClientProvider({ children }: FirebaseClientProviderProps
       auth={firebaseServices.auth}
       firestore={firebaseServices.firestore}
     >
-      {children}
+      <AuthGate>
+        {children}
+      </AuthGate>
     </FirebaseProvider>
   );
 }

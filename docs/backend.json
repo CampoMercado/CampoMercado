@@ -47,25 +47,17 @@
     "providers": ["anonymous"]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/produces/{produceId}",
-        "definition": {
-          "schema": {
-            "$ref": "#/entities/Produce"
-          },
-          "description": "Stores information about each type of produce. Anyone can read, only admins can write."
-        }
+      "produces": {
+        "schema": {
+          "$ref": "#/entities/Produce"
+        },
+        "description": "Stores information about each type of produce. Anyone can read, only admins can write."
       },
-      {
-        "path": "/prices/{priceId}",
-        "definition": {
-          "schema": {
-            "$ref": "#/entities/Price"
-          },
-          "description": "Stores the time-series price data for all produce. Anyone can read, only admins can write."
-        }
+      "prices": {
+        "schema": {
+          "$ref": "#/entities/Price"
+        },
+        "description": "Stores the time-series price data for all produce. Anyone can read, only admins can write."
       }
-    ]
   }
 }

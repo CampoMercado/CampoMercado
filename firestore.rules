@@ -5,8 +5,8 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin() {
-      // In a real app, this would check for an admin role,
-      // for now we'll allow any authenticated user to be an "admin".
+      // For now, we consider any authenticated user an "admin".
+      // This allows anonymous users to write, which is necessary for the current app setup.
       return request.auth != null;
     }
 

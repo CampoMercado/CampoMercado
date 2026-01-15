@@ -74,7 +74,7 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       return;
     }
 
-    setUserAuthState({ user: null, isUserLoading: true, userError: null }); // Reset on auth instance change
+    setUserAuthState({ user: auth.currentUser, isUserLoading: true, userError: null }); // Reset on auth instance change
 
     const unsubscribe = onAuthStateChanged(
       auth,
@@ -153,6 +153,13 @@ export const useFirebaseApp = (): FirebaseApp => {
   const { firebaseApp } = useFirebase();
   return firebaseApp;
 };
+
+/** Hook to check if the user state is still loading. */
+export const useIsUserLoading = (): boolean => {
+  const { isUserLoading } = useFirebase();
+  return isUserLoading;
+};
+
 
 type MemoFirebase <T> = T & {__memo?: boolean};
 
