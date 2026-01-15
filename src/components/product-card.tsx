@@ -120,14 +120,20 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
             <div className="text-sm font-mono text-success">${marketMax.toLocaleString()}</div>
           </div>
         </TableCell>
-        <TableCell className="w-[120px] hidden sm:table-cell py-3 px-2">
-           <div 
-             className="mx-auto cursor-pointer"
-             onClick={() => setChartOpen(true)}
-             title="Ver gráfico detallado"
-           >
-            <PriceChart product={product} simple />
-          </div>
+        <TableCell 
+            className="w-[120px] hidden sm:table-cell py-3 px-2 cursor-pointer"
+            onClick={() => setChartOpen(true)}
+            title="Ver gráfico detallado"
+        >
+           <div className="flex items-center gap-2 justify-center">
+              <span className={cn(
+                  'h-2 w-2 rounded-full bg-success',
+                  marketOpen && 'animate-pulse'
+              )}></span>
+              <div className="text-xs text-muted-foreground">
+                {format(new Date(lastUpdate), 'HH:mm')}
+              </div>
+           </div>
         </TableCell>
       </TableRow>
 

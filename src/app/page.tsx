@@ -171,7 +171,7 @@ export default function Home() {
               <TableHead className="text-green-300 px-2 w-[160px] hidden lg:table-cell">
                 Mercado
               </TableHead>
-              <TableHead className="w-[120px] hidden sm:table-cell py-3 px-2"></TableHead>
+              <TableHead className="w-[120px] hidden sm:table-cell py-3 px-2 text-center text-green-300">Actividad</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
