@@ -111,6 +111,8 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         marquee: 'marquee 40s linear infinite',
         marquee2: 'marquee2 40s linear infinite',
+        'marquee-slow': 'marquee 80s linear infinite',
+        'marquee2-slow': 'marquee2 80s linear infinite',
       },
       typography: (theme: (arg0: string) => any) => ({
         DEFAULT: {

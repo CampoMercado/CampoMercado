@@ -4,15 +4,16 @@ import { useState, useMemo } from 'react';
 import type { Stall, Product } from '@/lib/types';
 import { mockStalls } from '@/lib/data.tsx';
 import { Header } from '@/components/header';
-import { PriceTicker } from '@/components/price-ticker';
+import { PriceTicker, TopMoversTicker } from '@/components/price-ticker';
 import { StallsDisplay } from '@/components/stalls-display';
 import { MarketAnalysis } from '@/components/market-analysis';
 import { SectorAnalysis } from '@/components/sector-analysis';
+import { BrokerChart } from '@/components/broker-chart';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 
-type View = 'prices' | 'summary' | 'sector';
+type View = 'prices' | 'summary' | 'sector' | 'chart';
 
 export default function Home() {
   const [stalls] = useState<Stall[]>(mockStalls);
@@ -85,6 +86,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-black text-green-400">
       <Header />
       <PriceTicker products={allProducts} />
+      <TopMoversTicker products={allProducts} />
 
       <main className="flex-grow container py-8 space-y-8">
         <div>
@@ -100,15 +102,16 @@ export default function Home() {
           <div className="border-b border-green-800/50 mb-6">
              <div className="flex items-center space-x-2">
                 <TabButton view="prices">Precios</TabButton>
+                <TabButton view="chart">Gráfico de Mercado</TabButton>
                 <TabButton view="summary">Resumen del Mercado</TabButton>
                 <TabButton view="sector">Análisis por Sector</TabButton>
              </div>
           </div>
           
           {activeView === 'prices' && <StallsDisplay products={aggregatedProducts} allProducts={allProducts} />}
+          {activeView === 'chart' && <BrokerChart products={aggregatedProducts} />}
           {activeView === 'summary' && <MarketAnalysis stalls={stalls} />}
           {activeView === 'sector' && <SectorAnalysis stalls={stalls} />}
-
         </div>
       </main>
 
