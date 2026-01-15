@@ -32,23 +32,28 @@ export default function Home() {
     const welcomeShown = sessionStorage.getItem('welcomeShown');
     if (welcomeShown) {
       setAppState('loading');
-    }
+      const loadingTimer = setTimeout(() => {
+          setAppState('ready');
+      }, 5000); // 5s loading
 
-    const welcomeTimer = setTimeout(() => {
-        if (!welcomeShown) {
+      return () => {
+          clearTimeout(loadingTimer);
+      };
+    } else {
+        const welcomeTimer = setTimeout(() => {
             sessionStorage.setItem('welcomeShown', 'true');
-        }
-        setAppState('loading');
-    }, 2500); // Sync with welcome animation
+            setAppState('loading');
+        }, 2500); // Sync with welcome animation
 
-    const loadingTimer = setTimeout(() => {
-        setAppState('ready');
-    }, 7500); // 2.5s (welcome) + 5s (loading)
+        const loadingTimer = setTimeout(() => {
+            setAppState('ready');
+        }, 7500); // 2.5s (welcome) + 5s (loading)
 
-    return () => {
-        clearTimeout(welcomeTimer);
-        clearTimeout(loadingTimer);
-    };
+        return () => {
+            clearTimeout(welcomeTimer);
+            clearTimeout(loadingTimer);
+        };
+    }
   }, []);
 
 
@@ -127,7 +132,6 @@ export default function Home() {
                 <TableHead className="text-right text-green-300 px-2 w-[100px]">Var. (7d)</TableHead>
                 <TableHead className="text-green-300 px-2 w-[160px] hidden md:table-cell">Análisis</TableHead>
                 <TableHead className="text-green-300 px-2 w-[160px] hidden lg:table-cell">Mercado</TableHead>
-                <TableHead className="text-center text-green-300 w-[120px] hidden sm:table-cell px-2">Tendencia</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -182,7 +186,7 @@ export default function Home() {
       </main>
 
       <footer className="container py-6 text-center text-green-600/50 text-xs">
-        © {new Date().getFullYear()} CUYOCROPS. TODOS LOS DERECHOS RESERVADOS.
+        © {new Date().getFullYear()} CAMPO -&gt; MERCADO. TODOS LOS DERECHOS RESERVADOS.
       </footer>
     </div>
   );
