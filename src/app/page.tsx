@@ -43,7 +43,7 @@ export default function Home() {
 
     const loadingTimer = setTimeout(() => {
         setAppState('ready');
-    }, 2000); // Duration of skeleton screen
+    }, 5000); // Duration of skeleton screen
 
     return () => {
         clearTimeout(welcomeTimer);
