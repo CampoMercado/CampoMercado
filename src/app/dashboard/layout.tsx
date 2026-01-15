@@ -2,6 +2,7 @@
 
 import { useEffect, useState }from 'react';
 import { Header } from '@/components/header';
+import { PriceTicker, TopMoversTicker, PricePerKgTicker } from '@/components/price-ticker';
 
 export default function DashboardLayout({
   children,
@@ -17,7 +18,7 @@ export default function DashboardLayout({
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow container py-8">
+      <main className="flex-grow">
         {children}
       </main>
       <footer className="container py-6 text-center text-muted-foreground text-sm">

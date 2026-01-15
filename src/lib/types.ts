@@ -1,6 +1,3 @@
-
-
-
 export type PriceHistory = {
   date: string;
   price: number;
@@ -77,3 +74,16 @@ export type InventoryItem = {
 export type InventoryItemWithProduct = InventoryItem & {
   produce?: AggregatedProduct;
 }
+
+export type InventorySummaryData = {
+  totalInvested: number;
+  totalMarketValue: number;
+  totalPnl: number;
+  totalPnlPercent: number;
+  stockByLocation: {
+    name: string;
+    quantity: number;
+    value: number;
+  }[];
+  recentSales: (Sale & {productName: string})[];
+};

@@ -13,6 +13,8 @@ import { AddInventoryItemDialog } from '@/components/dashboard/add-inventory-ite
 import { InventoryCard } from '@/components/dashboard/inventory-card';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { PriceTicker, TopMoversTicker, PricePerKgTicker } from '@/components/price-ticker';
+import { InventorySummary } from '@/components/dashboard/inventory-summary';
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -188,44 +190,53 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-4xl font-headline font-bold">Mi Inventario</h1>
-          <p className="text-muted-foreground mt-1">
-            Gestiona tus compras, ventas y stock en tiempo real.
-          </p>
+    <>
+      <PriceTicker products={aggregatedProducts} />
+      <TopMoversTicker products={aggregatedProducts} />
+      <PricePerKgTicker products={aggregatedProducts} />
+      
+      <div className="container py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-4xl font-headline font-bold">Mi Inventario</h1>
+            <p className="text-muted-foreground mt-1">
+              Gestiona tus compras, ventas y stock en tiempo real.
+            </p>
+          </div>
+          <AddInventoryItemDialog products={aggregatedProducts} />
         </div>
-        <AddInventoryItemDialog products={aggregatedProducts} />
-      </div>
 
-      {inventoryWithData && inventoryWithData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {inventoryWithData.map((item) => (
-            <InventoryCard 
-                key={item.id} 
-                item={item} 
-                onDeleteItem={handleDeleteItem}
-                onSplitStock={handleSplitStock}
-                onRecordSale={handleRecordSale}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16 border-2 border-dashed border-muted rounded-lg">
-          <h3 className="text-xl font-semibold">Tu inventario está vacío</h3>
-          <p className="text-muted-foreground mt-2 mb-6">
-            Comienza por registrar tu primera compra de mercadería.
-          </p>
-          <AddInventoryItemDialog
-            products={aggregatedProducts}
-            buttonVariant="default"
-          >
-            <PlusCircle className="mr-2" />
-            Registrar Primera Compra
-          </AddInventoryItemDialog>
-        </div>
-      )}
-    </div>
+        {inventoryWithData && inventoryWithData.length > 0 ? (
+          <div className="space-y-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {inventoryWithData.map((item) => (
+                <InventoryCard 
+                    key={item.id} 
+                    item={item} 
+                    onDeleteItem={handleDeleteItem}
+                    onSplitStock={handleSplitStock}
+                    onRecordSale={handleRecordSale}
+                />
+              ))}
+            </div>
+            <InventorySummary inventory={inventoryWithData} />
+          </div>
+        ) : (
+          <div className="text-center py-16 border-2 border-dashed border-muted rounded-lg">
+            <h3 className="text-xl font-semibold">Tu inventario está vacío</h3>
+            <p className="text-muted-foreground mt-2 mb-6">
+              Comienza por registrar tu primera compra de mercadería.
+            </p>
+            <AddInventoryItemDialog
+              products={aggregatedProducts}
+              buttonVariant="default"
+            >
+              <PlusCircle className="mr-2" />
+              Registrar Primera Compra
+            </AddInventoryItemDialog>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
