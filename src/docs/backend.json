@@ -1,0 +1,95 @@
+
+{
+  "entities": {
+    "Produce": {
+      "title": "Produce",
+      "description": "Represents a type of produce (fruit or vegetable).",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the produce (e.g., Apple, Tomato)."
+        },
+        "variety": {
+          "type": "string",
+          "description": "Variety of the produce (e.g., Red Delicious, Perita)."
+        },
+        "category": {
+          "type": "string",
+          "description": "Category of the produce (e.g., Fruit, Vegetable)."
+        },
+        "weightPerCrate": {
+            "type": "number",
+            "description": "Weight in kilograms per crate."
+        }
+      },
+      "required": ["name", "category", "weightPerCrate"]
+    },
+    "Price": {
+      "title": "Price",
+      "description": "Represents the price of a specific produce item at a specific time.",
+      "type": "object",
+      "properties": {
+        "produceId": {
+          "type": "string",
+          "description": "Reference to the Produce item this price belongs to."
+        },
+        "price": {
+          "type": "number",
+          "description": "Price per crate of the produce."
+        },
+        "date": {
+          "type": "string",
+          "description": "ISO 8601 string of when the price was recorded.",
+          "format": "date-time"
+        }
+      },
+      "required": ["produceId", "price", "date"]
+    },
+    "UserProfile": {
+        "title": "User Profile",
+        "description": "Stores public profile information for a user.",
+        "type": "object",
+        "properties": {
+            "fullName": {
+                "type": "string",
+                "description": "The user's full name."
+            },
+            "email": {
+                "type": "string",
+                "format": "email",
+                "description": "The user's email address."
+            },
+            "dashboardType": {
+                "type": "string",
+                "description": "The type of dashboard the user has selected.",
+                "enum": ["own_stall", "third_party"]
+            }
+        },
+        "required": ["fullName", "email"]
+    }
+  },
+  "auth": {
+    "providers": ["email"]
+  },
+  "firestore": {
+      "produces": {
+        "schema": {
+          "$ref": "#/entities/Produce"
+        },
+        "description": "Stores information about each type of produce. Anyone can read, only admins can write."
+      },
+      "prices": {
+        "schema": {
+          "$ref": "#/entities/Price"
+        },
+        "description": "Stores the time-series price data for all produce. Anyone can read, only admins can write."
+      },
+      "/users/{userId}": {
+          "schema": {
+              "$ref": "#/entities/UserProfile"
+          },
+          "description": "Stores the profile for a specific user, identified by their Firebase Auth UID."
+      }
+  }
+}
