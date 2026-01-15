@@ -8,27 +8,27 @@ type SpecialDate = {
 
 export const specialDates: SpecialDate[] = [
   {
-    name: 'Viernes Santo 2024',
-    date: '2024-03-29',
+    name: 'Viernes Santo 2026',
+    date: '2026-04-03',
   },
   {
-    name: 'Día del Trabajador 2024',
-    date: '2024-05-01',
+    name: 'Día del Trabajador 2026',
+    date: '2026-05-01',
   },
   {
-    name: 'Revolución de Mayo 2024',
-    date: '2024-05-25',
+    name: 'Revolución de Mayo 2026',
+    date: '2026-05-25',
   },
    {
-    name: 'Inicio Invierno 2024',
-    date: '2024-06-21',
+    name: 'Inicio Invierno 2026',
+    date: '2026-06-21',
   },
   {
-    name: 'Día de la Independencia 2024',
-    date: '2024-07-09',
+    name: 'Día de la Independencia 2026',
+    date: '2026-07-09',
   },
   {
-    name: 'Pico de Invierno 2024',
-    date: '2024-07-20',
+    name: 'Pico de Invierno 2026',
+    date: '2026-07-20',
   }
 ];
