@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -39,11 +38,7 @@ export default function LoginPage() {
   const auth = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const [year, setYear] = useState<number | null>(null);
-
-  useEffect(() => {
-    setYear(new Date().getFullYear());
-  }, []);
+  const year = new Date().getFullYear();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -136,7 +131,7 @@ export default function LoginPage() {
         </CardContent>
       </Card>
        <footer className="container py-6 text-center text-muted-foreground text-sm">
-        {year && `© ${year} Campo Mercado.`}
+        {`© ${year} Campo Mercado.`}
       </footer>
     </div>
   );

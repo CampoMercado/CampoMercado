@@ -23,6 +23,7 @@ import {
 import { MarketSummary } from '@/components/market-summary';
 import { MarketStatus } from '@/components/market-status';
 import { HistoricalView } from '@/components/historical-view';
+import { DesktopOnlyView } from '@/components/desktop-only-view';
 
 type View = 'prices' | 'chart' | 'summary' | 'availability' | 'history';
 
@@ -40,11 +41,7 @@ export default function Home() {
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(
     null
   );
-  const [year, setYear] = useState<number | null>(null);
-
-  useEffect(() => {
-    setYear(new Date().getFullYear());
-  }, []);
+  const year = new Date().getFullYear();
 
 
   useEffect(() => {
@@ -132,10 +129,10 @@ export default function Home() {
               <TableHead className="text-right text-green-300 px-4 w-[100px]">
                 Var.
               </TableHead>
-              <TableHead className="text-green-300 px-4 w-[160px]">
+              <TableHead className="hidden md:table-cell text-green-300 px-4 w-[160px]">
                 Análisis
               </TableHead>
-              <TableHead className="text-green-300 px-4 w-[160px]">
+              <TableHead className="hidden md:table-cell text-green-300 px-4 w-[160px]">
                 Mercado
               </TableHead>
               <TableHead className="w-[200px] py-3 px-4 text-left text-green-300">
@@ -167,47 +164,49 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-green-400 animate-fade-in">
-      <Header />
-      <PriceTicker products={aggregatedProducts} />
-      <TopMoversTicker products={aggregatedProducts} />
+      <DesktopOnlyView>
+        <Header />
+        <PriceTicker products={aggregatedProducts} />
+        <TopMoversTicker products={aggregatedProducts} />
 
-      <main className="flex-grow container py-8 space-y-8">
-        <div>
-          <div className="mb-6">
-            <div className="flex items-center justify-between">
-              <h1 className="text-6xl font-headline tracking-widest text-green-300">
-                MERCADO DIARIO
-              </h1>
-              <MarketStatus onStatusChange={setMarketOpen} />
+        <main className="flex-grow container py-8 space-y-8">
+          <div>
+            <div className="mb-6">
+              <div className="flex items-center justify-between">
+                <h1 className="text-4xl md:text-6xl font-headline tracking-widest text-green-300">
+                  MERCADO DIARIO
+                </h1>
+                <MarketStatus onStatusChange={setMarketOpen} />
+              </div>
+              <p className="text-green-500 mt-2 tracking-wider">
+                MERCADO COOPERATIVO DE GUYAMALLÉN
+              </p>
             </div>
-            <p className="text-green-500 mt-2 tracking-wider">
-              MERCADO COOPERATIVO DE GUYAMALLÉN
-            </p>
-          </div>
 
-          <div className="border-b border-green-800/50 mb-6">
-            <div className="flex items-center space-x-1">
-              <TabButton view="prices">Precios</TabButton>
-              <TabButton view="chart">Gráfico</TabButton>
-              <TabButton view="summary">Resumen</TabButton>
-              <TabButton view="availability">Disponibilidad</TabButton>
-              <TabButton view="history">Históricos</TabButton>
+            <div className="border-b border-green-800/50 mb-6">
+              <div className="flex items-center space-x-1 overflow-x-auto pb-2">
+                <TabButton view="prices">Precios</TabButton>
+                <TabButton view="chart">Gráfico</TabButton>
+                <TabButton view="summary">Resumen</TabButton>
+                <TabButton view="availability">Disponibilidad</TabButton>
+                <TabButton view="history">Históricos</TabButton>
+              </div>
             </div>
+
+            {activeView === 'prices' && (
+              <StallsDisplay products={aggregatedProducts} />
+            )}
+            {activeView === 'chart' && <BrokerChart products={aggregatedProducts} />}
+            {activeView === 'summary' && <MarketSummary products={aggregatedProducts} />}
+            {activeView === 'availability' && <SeasonalAvailability />}
+            {activeView === 'history' && <HistoricalView products={aggregatedProducts} />}
           </div>
+        </main>
 
-          {activeView === 'prices' && (
-            <StallsDisplay products={aggregatedProducts} />
-          )}
-          {activeView === 'chart' && <BrokerChart products={aggregatedProducts} />}
-          {activeView === 'summary' && <MarketSummary products={aggregatedProducts} />}
-          {activeView === 'availability' && <SeasonalAvailability />}
-          {activeView === 'history' && <HistoricalView products={aggregatedProducts} />}
-        </div>
-      </main>
-
-      <footer className="container py-6 text-center text-green-600/50 text-xs">
-        {year && `© ${year} CAMPO MERCADO. TODOS LOS DERECHOS RESERVADOS.`}
-      </footer>
+        <footer className="container py-6 text-center text-green-600/50 text-xs">
+          {`© ${year} CAMPO MERCADO. TODOS LOS DERECHOS RESERVADOS.`}
+        </footer>
+      </DesktopOnlyView>
     </div>
   );
 }

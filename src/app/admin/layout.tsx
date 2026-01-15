@@ -13,11 +13,7 @@ export default function AdminLayout({
 }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
-  const [year, setYear] = useState<number | null>(null);
-
-  useEffect(() => {
-    setYear(new Date().getFullYear());
-  }, []);
+  const year = new Date().getFullYear();
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -44,7 +40,7 @@ export default function AdminLayout({
         {children}
       </main>
       <footer className="container py-6 text-center text-muted-foreground text-sm">
-        {year && `© ${year} Campo Mercado.`}
+        {`© ${year} Campo Mercado.`}
       </footer>
     </div>
   );
