@@ -6,7 +6,7 @@ import { mockStalls } from '@/lib/data.tsx';
 import { Header } from '@/components/header';
 import { PriceTicker, TopMoversTicker } from '@/components/price-ticker';
 import { ProductCard } from '@/components/product-card';
-import { SectorAnalysis } from '@/components/sector-analysis';
+import { SeasonalAvailability } from '@/components/seasonal-availability';
 import { BrokerChart } from '@/components/broker-chart';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/table';
 import { MarketSummary } from '@/components/market-summary';
 
-type View = 'prices' | 'chart' | 'summary' | 'sector';
+type View = 'prices' | 'chart' | 'summary' | 'availability';
 
 export default function Home() {
   const [stalls] = useState<Stall[]>(mockStalls);
@@ -199,7 +199,7 @@ export default function Home() {
               <TabButton view="prices">Precios</TabButton>
               <TabButton view="chart">Gráfico de Mercado</TabButton>
               <TabButton view="summary">Resumen del Mercado</TabButton>
-              <TabButton view="sector">Análisis por Sector</TabButton>
+              <TabButton view="availability">Disponibilidad</TabButton>
             </div>
           </div>
 
@@ -211,7 +211,7 @@ export default function Home() {
           )}
           {activeView === 'chart' && <BrokerChart products={aggregatedProducts} />}
           {activeView === 'summary' && <MarketSummary stalls={stalls} />}
-          {activeView === 'sector' && <SectorAnalysis stalls={stalls} />}
+          {activeView === 'availability' && <SeasonalAvailability />}
         </div>
       </main>
 
