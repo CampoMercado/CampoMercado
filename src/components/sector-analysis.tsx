@@ -8,31 +8,28 @@ import { cn } from '@/lib/utils';
 
 type ProductMetric = {
   name: string;
-  weeklyChange: number;
+  change: number;
 };
 
 type SectorData = {
   name: string;
-  avgWeeklyChange: number;
+  avgChange: number;
   topPerformer: ProductMetric | null;
   worstPerformer: ProductMetric | null;
 };
 
 const calculateMetrics = (product: Product): ProductMetric => {
   if (product.priceHistory.length < 2) {
-    return { name: `${product.name} (${product.variety})`, weeklyChange: 0 };
+    return { name: `${product.name} (${product.variety})`, change: 0 };
   }
   const currentPrice = product.priceHistory.at(-1)!.price;
-  const weeklyPriceData = product.priceHistory.find(
-    (p) => new Date(p.date) <= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-  );
-  const weeklyPrice = weeklyPriceData?.price ?? product.priceHistory[0].price;
+  const prevPrice = product.priceHistory.at(-2)!.price;
 
-  const weeklyChange = weeklyPrice > 0 ? ((currentPrice - weeklyPrice) / weeklyPrice) * 100 : 0;
+  const change = prevPrice > 0 ? ((currentPrice - prevPrice) / prevPrice) * 100 : 0;
   
   return {
     name: `${product.name} (${product.variety})`,
-    weeklyChange,
+    change,
   };
 };
 
@@ -65,13 +62,13 @@ export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
     return Object.entries(productsByCategory).map(([category, products]) => {
       const productMetrics = products.map(calculateMetrics);
       
-      const avgWeeklyChange = productMetrics.reduce((sum, p) => sum + p.weeklyChange, 0) / productMetrics.length;
+      const avgChange = productMetrics.reduce((sum, p) => sum + p.change, 0) / productMetrics.length;
 
-      const sortedByChange = [...productMetrics].sort((a, b) => b.weeklyChange - a.weeklyChange);
+      const sortedByChange = [...productMetrics].sort((a, b) => b.change - a.change);
 
       return {
         name: category,
-        avgWeeklyChange,
+        avgChange,
         topPerformer: sortedByChange[0] ?? null,
         worstPerformer: sortedByChange[sortedByChange.length - 1] ?? null,
       };
@@ -89,14 +86,14 @@ export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
             <CardHeader>
               <CardTitle className="text-xl text-green-300">{sector.name}</CardTitle>
                <div className="flex items-center text-sm pt-1">
-                <span className="text-muted-foreground">Rendimiento Semanal:</span>
+                <span className="text-muted-foreground">Rendimiento:</span>
                 <span className={cn(
                     "font-bold font-mono flex items-center ml-2",
-                    sector.avgWeeklyChange > 0 && 'text-success',
-                    sector.avgWeeklyChange < 0 && 'text-danger'
+                    sector.avgChange > 0 && 'text-success',
+                    sector.avgChange < 0 && 'text-danger'
                 )}>
-                    {sector.avgWeeklyChange > 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
-                    {sector.avgWeeklyChange.toFixed(2)}%
+                    {sector.avgChange > 0 ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                    {sector.avgChange.toFixed(2)}%
                 </span>
                </div>
             </CardHeader>
@@ -105,13 +102,13 @@ export function SectorAnalysis({ stalls }: { stalls: Stall[] }) {
                 {sector.topPerformer && (
                    <div>
                      <CardDescription className="text-xs text-green-500 mb-1 flex items-center gap-2"><TrendingUp size={14}/> Mejor Rendimiento</CardDescription>
-                     <ChangeIndicator value={sector.topPerformer.weeklyChange} label={sector.topPerformer.name} />
+                     <ChangeIndicator value={sector.topPerformer.change} label={sector.topPerformer.name} />
                    </div>
                 )}
                 {sector.worstPerformer && sector.topPerformer?.name !== sector.worstPerformer.name && (
                   <div>
                     <CardDescription className="text-xs text-red-500/80 mb-1 flex items-center gap-2"><TrendingDown size={14}/> Peor Rendimiento</CardDescription>
-                    <ChangeIndicator value={sector.worstPerformer.weeklyChange} label={sector.worstPerformer.name} />
+                    <ChangeIndicator value={sector.worstPerformer.change} label={sector.worstPerformer.name} />
                   </div>
                 )}
                  {sector.topPerformer?.name === sector.worstPerformer?.name && sector.topPerformer && (

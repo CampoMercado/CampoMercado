@@ -144,10 +144,7 @@ export default function Home() {
                 Precio y Actualización
               </TableHead>
               <TableHead className="text-right text-green-300 px-2 w-[100px]">
-                Var. (ant.)
-              </TableHead>
-              <TableHead className="text-right text-green-300 px-2 w-[100px]">
-                Var. (7d)
+                Var.
               </TableHead>
               <TableHead className="text-green-300 px-2 w-[160px] hidden md:table-cell">
                 Análisis

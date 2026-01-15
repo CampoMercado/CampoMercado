@@ -15,20 +15,6 @@ type ProductCardProps = {
   marketProducts: TickerProduct[];
 };
 
-// Helper to find the price closest to N days ago
-const findPriceNearDaysAgo = (priceHistory: PriceHistory[], days: number): PriceHistory | undefined => {
-  if (priceHistory.length < 2) return undefined;
-  const targetDate = new Date();
-  targetDate.setDate(targetDate.getDate() - days);
-
-  return priceHistory.reduce((prev, curr) => {
-    const prevDiff = Math.abs(new Date(prev.date).getTime() - targetDate.getTime());
-    const currDiff = Math.abs(new Date(curr.date).getTime() - targetDate.getTime());
-    return currDiff < prevDiff ? curr : prev;
-  });
-};
-
-
 export function ProductCard({ product, marketProducts }: ProductCardProps) {
   const [isChartOpen, setChartOpen] = useState(false);
 
@@ -42,16 +28,9 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
     const prevPriceData = product.priceHistory.at(-2);
     const prevPrice = prevPriceData?.price ?? currentPrice;
 
-    // Weekly price is the one closest to 7 days ago
-    const weeklyPriceData = findPriceNearDaysAgo(product.priceHistory, 7);
-    const weeklyPrice = weeklyPriceData?.price ?? product.priceHistory[0].price;
-
-    const dailyChange = currentPrice - prevPrice;
-    const dailyChangePercent = prevPrice === 0 ? 0 : (dailyChange / prevPrice) * 100;
+    const change = currentPrice - prevPrice;
+    const changePercent = prevPrice === 0 ? 0 : (change / prevPrice) * 100;
     
-    const weeklyChange = currentPrice - weeklyPrice;
-    const weeklyChangePercent = weeklyPrice === 0 ? 0 : (weeklyChange / weeklyPrice) * 100;
-
     const allHistoricalPrices = product.priceHistory.map(h => h.price);
     const mean = allHistoricalPrices.reduce((a, b) => a + b, 0) / allHistoricalPrices.length;
     const stdDev = Math.sqrt(allHistoricalPrices.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / allHistoricalPrices.length);
@@ -70,8 +49,7 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
     return {
       currentPrice,
       lastUpdate: currentPriceData.date,
-      dailyChangePercent,
-      weeklyChangePercent,
+      changePercent,
       volatility,
       movingAverage7d,
       marketMin,
@@ -81,7 +59,7 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
 
   if (!productAnalysis) return null;
 
-  const { currentPrice, lastUpdate, dailyChangePercent, weeklyChangePercent, volatility, movingAverage7d, marketMin, marketMax } = productAnalysis;
+  const { currentPrice, lastUpdate, changePercent, volatility, movingAverage7d, marketMin, marketMax } = productAnalysis;
 
   const ChangeIndicator = ({ value, label }: { value: number, label: string }) => {
     const isUp = value > 0;
@@ -114,10 +92,7 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
             </div>
         </TableCell>
         <TableCell className="text-right py-3 px-2 w-[100px]">
-          <ChangeIndicator value={dailyChangePercent} label="vs Ant."/>
-        </TableCell>
-        <TableCell className="text-right py-3 px-2 w-[100px]">
-          <ChangeIndicator value={weeklyChangePercent} label="vs 7d"/>
+          <ChangeIndicator value={changePercent} label="Var."/>
         </TableCell>
         <TableCell className="py-3 px-2 w-[160px] hidden md:table-cell">
           <div className="flex items-center justify-between">
