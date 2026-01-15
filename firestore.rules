@@ -18,6 +18,11 @@ service cloud.firestore {
       match /inventory/{inventoryItemId} {
         allow read, write, delete: if request.auth != null && request.auth.uid == userId;
       }
+
+      // Protect user-defined costs: only the user can manage them
+      match /costs/{costId} {
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     match /produces/{produceId} {
