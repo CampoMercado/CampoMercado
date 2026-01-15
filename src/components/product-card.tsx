@@ -24,19 +24,14 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
     const currentPriceData = product.priceHistory.at(-1)!;
     const currentPrice = currentPriceData.price;
     
-    // Previous price is the one right before the last one
     const prevPriceData = product.priceHistory.at(-2);
     const prevPrice = prevPriceData?.price ?? currentPrice;
 
     const change = currentPrice - prevPrice;
     const changePercent = prevPrice === 0 ? 0 : (change / prevPrice) * 100;
     
-    const allHistoricalPrices = product.priceHistory.map(h => h.price);
-    const mean = allHistoricalPrices.reduce((a, b) => a + b, 0) / allHistoricalPrices.length;
-    const stdDev = Math.sqrt(allHistoricalPrices.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / allHistoricalPrices.length);
-    const volatility = mean > 0 ? (stdDev / mean) * 100 : 0;
-    
-    const movingAverage7d = product.priceHistory.slice(-7).reduce((acc, val) => acc + val.price, 0) / Math.min(product.priceHistory.length, 7);
+    // Simplified volatility: it's just the percentage change between last two prices.
+    const volatility = Math.abs(changePercent);
 
     const relevantMarketPrices = marketProducts
       .filter(p => p.name === product.name && p.variety === product.variety)
@@ -49,9 +44,10 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
     return {
       currentPrice,
       lastUpdate: currentPriceData.date,
+      prevPriceData,
+      prevPrice,
       changePercent,
       volatility,
-      movingAverage7d,
       marketMin,
       marketMax,
     };
@@ -59,7 +55,7 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
 
   if (!productAnalysis) return null;
 
-  const { currentPrice, lastUpdate, changePercent, volatility, movingAverage7d, marketMin, marketMax } = productAnalysis;
+  const { currentPrice, lastUpdate, changePercent, volatility, prevPriceData, prevPrice, marketMin, marketMax } = productAnalysis;
 
   const ChangeIndicator = ({ value, label }: { value: number, label: string }) => {
     const isUp = value > 0;
@@ -95,9 +91,11 @@ export function ProductCard({ product, marketProducts }: ProductCardProps) {
           <ChangeIndicator value={changePercent} label="Var."/>
         </TableCell>
         <TableCell className="py-3 px-2 w-[160px] hidden md:table-cell">
-          <div className="flex items-center justify-between">
-            <div className="text-xs text-muted-foreground">PPM (7d):</div>
-            <div className="text-sm font-mono text-green-400">${movingAverage7d.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}</div>
+           <div className="flex items-center justify-between">
+             <div className="text-xs text-muted-foreground">
+                {prevPriceData ? format(new Date(prevPriceData.date), "d MMM, HH:mm", { locale: es }) : 'Precio Ant.'}:
+            </div>
+            <div className="text-sm font-mono text-green-400">${prevPrice.toLocaleString()}</div>
           </div>
            <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">Volatilidad:</div>
