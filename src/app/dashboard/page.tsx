@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { collection, doc, deleteDoc, updateDoc, arrayUnion, writeBatch } from 'firebase/firestore';
 
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import type { UserProfile, InventoryItem, Produce, Price } from '@/lib/types';
+import type { UserProfile, InventoryItem, Produce, Price, Sale } from '@/lib/types';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -152,13 +152,14 @@ export default function DashboardPage() {
   };
   
 
-  const handleRecordSale = async (itemId: string, quantity: number, salePrice: number, remainingQuantity: number) => {
+  const handleRecordSale = async (itemId: string, quantity: number, salePrice: number, saleStatus: 'Pagado' | 'Pendiente', remainingQuantity: number) => {
      if (!user) return;
     const itemRef = doc(firestore, `users/${user.uid}/inventory`, itemId);
-    const saleRecord = {
+    const saleRecord: Sale = {
         quantity,
         salePrice,
         date: new Date().toISOString(),
+        status: saleStatus,
     };
     await updateDoc(itemRef, {
         quantity: remainingQuantity,
@@ -166,7 +167,7 @@ export default function DashboardPage() {
     });
     toast({
         title: 'Venta Registrada',
-        description: `Se vendieron ${quantity} cajones a $${salePrice.toLocaleString()} cada uno.`,
+        description: `Se vendieron ${quantity} cajones a $${salePrice.toLocaleString()} c/u. Estado: ${saleStatus}`,
     });
   }
 

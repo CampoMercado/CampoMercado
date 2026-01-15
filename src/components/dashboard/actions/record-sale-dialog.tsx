@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { InventoryItemWithProduct } from '@/lib/types';
+import { InventoryItemWithProduct, Sale } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -23,11 +23,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 type RecordSaleDialogProps = {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (quantity: number, salePrice: number) => void;
+  onConfirm: (quantity: number, salePrice: number, saleStatus: Sale['status']) => void;
   item: InventoryItemWithProduct;
 };
 
@@ -35,6 +36,7 @@ export function RecordSaleDialog({ isOpen, onClose, onConfirm, item }: RecordSal
   const saleSchema = z.object({
     quantity: z.coerce.number().positive('La cantidad debe ser positiva.').max(item.quantity, `No puedes vender más de ${item.quantity} cajones.`),
     salePrice: z.coerce.number().positive('El precio de venta debe ser positivo.'),
+    saleStatus: z.enum(['Pagado', 'Pendiente']),
   });
   
   const form = useForm<z.infer<typeof saleSchema>>({
@@ -42,6 +44,7 @@ export function RecordSaleDialog({ isOpen, onClose, onConfirm, item }: RecordSal
     defaultValues: {
       quantity: 1,
       salePrice: item.produce?.priceHistory[0]?.price || item.purchasePrice,
+      saleStatus: 'Pagado',
     },
   });
 
@@ -51,12 +54,13 @@ export function RecordSaleDialog({ isOpen, onClose, onConfirm, item }: RecordSal
         form.reset({
             quantity: 1,
             salePrice: item.produce?.priceHistory[0]?.price || item.purchasePrice,
+            saleStatus: 'Pagado',
         });
     }
   }, [isOpen, item, form]);
 
   const handleSubmit = (values: z.infer<typeof saleSchema>) => {
-    onConfirm(values.quantity, values.salePrice);
+    onConfirm(values.quantity, values.salePrice, values.saleStatus as Sale['status']);
     onClose();
   };
 
@@ -94,6 +98,40 @@ export function RecordSaleDialog({ isOpen, onClose, onConfirm, item }: RecordSal
                     <Input type="number" {...field} />
                   </FormControl>
                    <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="saleStatus"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Estado de la Venta</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="Pagado" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Pagado (Dinero recibido)
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="Pendiente" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Pendiente (A consignación / Cta. Cte.)
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

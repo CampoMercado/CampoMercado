@@ -59,6 +59,7 @@ export type Sale = {
     quantity: number;
     salePrice: number;
     date: string;
+    status: 'Pagado' | 'Pendiente';
 };
 
 export type InventoryItem = {
@@ -75,15 +76,31 @@ export type InventoryItemWithProduct = InventoryItem & {
   produce?: AggregatedProduct;
 }
 
+export type Expense = {
+  id: string;
+  description: string;
+  amount: number;
+  date: string;
+};
+
 export type InventorySummaryData = {
-  totalInvested: number;
-  totalMarketValue: number;
-  totalPnl: number;
-  totalPnlPercent: number;
+  // Inventory Metrics
+  currentStockValue: number;
+  currentInvestedCapital: number;
+  unrealizedPnl: number;
+  unrealizedPnlPercent: number;
+  // Sales Metrics
+  totalRevenue: number;
+  accountsReceivable: number;
+  costOfGoodsSold: number;
+  grossProfit: number;
+  grossProfitMargin: number;
+  // Location Metrics
   stockByLocation: {
     name: string;
     quantity: number;
     value: number;
   }[];
-  recentSales: (Sale & {productName: string})[];
+  // Sales History
+  recentSales: (Sale & { productName: string })[];
 };

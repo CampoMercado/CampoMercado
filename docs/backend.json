@@ -59,11 +59,6 @@
           "type": "string",
           "format": "email",
           "description": "The user's email address."
-        },
-        "dashboardType": {
-          "type": "string",
-          "description": "The type of dashboard the user has selected.",
-          "enum": ["own_stall", "third_party"]
         }
       },
       "required": ["fullName", "email"]
@@ -84,9 +79,43 @@
         "purchasePrice": {
           "type": "number",
           "description": "Price per crate at which the item was purchased."
+        },
+        "purchaseDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 string of when the item was purchased."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status or location of the inventory item (e.g., En Reserva, Puesto 5)."
+        },
+        "sales": {
+            "type": "array",
+            "description": "A list of sales made from this specific inventory lot.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "quantity": { "type": "number" },
+                    "salePrice": { "type": "number" },
+                    "date": { "type": "string", "format": "date-time" },
+                    "status": { "type": "string", "enum": ["Pagado", "Pendiente"]}
+                },
+                "required": ["quantity", "salePrice", "date", "status"]
+            }
         }
       },
-      "required": ["produceId", "quantity", "purchasePrice"]
+      "required": ["produceId", "quantity", "purchasePrice", "purchaseDate", "status"]
+    },
+    "Expense": {
+        "title": "Expense",
+        "description": "Represents a business expense.",
+        "type": "object",
+        "properties": {
+            "description": { "type": "string" },
+            "amount": { "type": "number" },
+            "date": { "type": "string", "format": "date-time" }
+        },
+        "required": ["description", "amount", "date"]
     }
   },
   "auth": {
@@ -116,6 +145,12 @@
         "$ref": "#/entities/InventoryItem"
       },
       "description": "Stores the inventory items for a specific user."
+    },
+    "/users/{userId}/expenses/{expenseId}": {
+      "schema": {
+        "$ref": "#/entities/Expense"
+      },
+      "description": "Stores the business expenses for a specific user."
     }
   }
 }

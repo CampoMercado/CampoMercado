@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-import { InventoryItem, InventoryItemWithProduct } from '@/lib/types';
+import { InventoryItem, InventoryItemWithProduct, Sale } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
   Card,
@@ -45,7 +45,7 @@ type InventoryCardProps = {
   item: InventoryItemWithProduct;
   onDeleteItem: (itemId: string) => void;
   onSplitStock: (originalItem: InventoryItem, quantityToMove: number, newStatus: string) => void;
-  onRecordSale: (itemId: string, quantity: number, salePrice: number, remainingQuantity: number) => void;
+  onRecordSale: (itemId: string, quantity: number, salePrice: number, saleStatus: Sale['status'], remainingQuantity: number) => void;
 };
 
 
@@ -211,7 +211,7 @@ export function InventoryCard({ item, onDeleteItem, onSplitStock, onRecordSale }
        <RecordSaleDialog
         isOpen={isSaleOpen}
         onClose={() => setSaleOpen(false)}
-        onConfirm={(quantity, salePrice) => onRecordSale(item.id, quantity, salePrice, item.quantity - quantity)}
+        onConfirm={(quantity, salePrice, saleStatus) => onRecordSale(item.id, quantity, salePrice, saleStatus, item.quantity - quantity)}
         item={item}
       />
     </>

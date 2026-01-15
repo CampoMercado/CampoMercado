@@ -23,7 +23,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ArrowDown, ArrowUp, Minus, TrendingUp, Banknote, Package, Landmark } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowDown, ArrowUp, Minus, TrendingUp, Banknote, Package, Landmark, Scale, FileClock, HandCoins, PiggyBank, CircleDollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
 
@@ -32,11 +33,13 @@ const SummaryStat = ({
   value,
   icon,
   className,
+  description,
 }: {
   title: string;
   value: string;
   icon: React.ElementType;
   className?: string;
+  description?: string;
 }) => {
   const Icon = icon;
   return (
@@ -49,6 +52,7 @@ const SummaryStat = ({
         <p className={cn('text-2xl font-bold font-mono', className)}>
           {value}
         </p>
+         {description && <p className="text-xs text-muted-foreground">{description}</p>}
       </div>
     </div>
   );
@@ -64,29 +68,44 @@ export function InventorySummary({
       return null;
     }
 
-    let totalInvested = 0;
-    let totalMarketValue = 0;
+    let currentInvestedCapital = 0;
+    let currentStockValue = 0;
+    let totalRevenue = 0;
+    let accountsReceivable = 0;
+    let costOfGoodsSold = 0;
+    
     const stockByLocation: { [key: string]: { quantity: number; value: number } } = {};
     const recentSales: (Sale & { productName: string })[] = [];
 
     inventory.forEach((item) => {
       if (!item.produce) return;
 
+      // Metrics for current, unsold inventory
       const purchaseValue = item.purchasePrice * item.quantity;
       const marketPrice = item.produce.priceHistory[0]?.price || 0;
       const marketValue = marketPrice * item.quantity;
-
-      totalInvested += purchaseValue;
-      totalMarketValue += marketValue;
+      currentInvestedCapital += purchaseValue;
+      currentStockValue += marketValue;
       
+      // Group stock by location/status
       if (!stockByLocation[item.status]) {
         stockByLocation[item.status] = { quantity: 0, value: 0 };
       }
       stockByLocation[item.status].quantity += item.quantity;
       stockByLocation[item.status].value += purchaseValue;
 
+      // Metrics for sold inventory
       if (item.sales) {
         item.sales.forEach(sale => {
+            const saleTotal = sale.quantity * sale.salePrice;
+            costOfGoodsSold += sale.quantity * item.purchasePrice;
+
+            if (sale.status === 'Pagado') {
+                totalRevenue += saleTotal;
+            } else {
+                accountsReceivable += saleTotal;
+            }
+            
             recentSales.push({
                 ...sale,
                 productName: `${item.produce?.name} (${item.produce?.variety})`,
@@ -95,16 +114,24 @@ export function InventorySummary({
       }
     });
 
-    const totalPnl = totalMarketValue - totalInvested;
-    const totalPnlPercent = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
+    const unrealizedPnl = currentStockValue - currentInvestedCapital;
+    const unrealizedPnlPercent = currentInvestedCapital > 0 ? (unrealizedPnl / currentInvestedCapital) * 100 : 0;
     
+    const grossProfit = totalRevenue - costOfGoodsSold;
+    const grossProfitMargin = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
+
     recentSales.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return {
-      totalInvested,
-      totalMarketValue,
-      totalPnl,
-      totalPnlPercent,
+      currentInvestedCapital,
+      currentStockValue,
+      unrealizedPnl,
+      unrealizedPnlPercent,
+      totalRevenue,
+      accountsReceivable,
+      costOfGoodsSold,
+      grossProfit,
+      grossProfitMargin,
       stockByLocation: Object.entries(stockByLocation).map(([name, data]) => ({name, ...data})),
       recentSales: recentSales.slice(0, 5),
     };
@@ -115,18 +142,24 @@ export function InventorySummary({
   }
 
   const {
-    totalInvested,
-    totalMarketValue,
-    totalPnl,
-    totalPnlPercent,
+    currentInvestedCapital,
+    currentStockValue,
+    unrealizedPnl,
+    unrealizedPnlPercent,
+    totalRevenue,
+    accountsReceivable,
+    costOfGoodsSold,
+    grossProfit,
+    grossProfitMargin,
     stockByLocation,
     recentSales
   } = summary;
 
-  const isUp = totalPnl > 0;
-  const isDown = totalPnl < 0;
-  const pnlColor = isUp ? 'text-success' : isDown ? 'text-danger' : 'text-muted-foreground';
-  const PnlIcon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
+  const isUnrealizedUp = unrealizedPnl > 0;
+  const unrealizedPnlColor = isUnrealizedUp ? 'text-success' : 'text-danger';
+  
+  const isGrossProfitUp = grossProfit > 0;
+  const grossProfitColor = isGrossProfitUp ? 'text-success' : 'text-danger';
 
   return (
     <Card className="border-border/50 bg-card/50">
@@ -136,34 +169,69 @@ export function InventorySummary({
           Un resumen consolidado de tu posición actual en el mercado.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-foreground">
-          <SummaryStat 
-            icon={Banknote}
-            title="Capital Invertido"
-            value={`$${totalInvested.toLocaleString()}`}
-          />
-           <SummaryStat 
-            icon={Landmark}
-            title="Valor de Mercado"
-            value={`$${totalMarketValue.toLocaleString()}`}
-          />
-           <SummaryStat 
-            icon={TrendingUp}
-            title="G/P Potencial Total"
-            value={`$${totalPnl.toLocaleString()}`}
-            className={pnlColor}
-          />
-          <div className="flex items-start gap-4">
-              <div className="bg-muted p-3 rounded-lg">
-                <PnlIcon className={cn("h-6 w-6", pnlColor)} />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Retorno Potencial</p>
-                <p className={cn('text-2xl font-bold font-mono', pnlColor)}>
-                    {totalPnlPercent.toFixed(2)}%
-                </p>
-              </div>
+      <CardContent className="space-y-12">
+        
+        <div>
+            <h3 className="text-lg font-semibold mb-6 text-primary flex items-center gap-2">
+                <PiggyBank />
+                Análisis de Rentabilidad (Ventas Realizadas)
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-foreground">
+                <SummaryStat 
+                    icon={CircleDollarSign}
+                    title="Ingresos Totales"
+                    value={`$${totalRevenue.toLocaleString()}`}
+                    description="Dinero recibido de ventas pagadas."
+                />
+                <SummaryStat 
+                    icon={FileClock}
+                    title="Cuentas por Cobrar"
+                    value={`$${accountsReceivable.toLocaleString()}`}
+                    description="Dinero pendiente de ventas a consignación."
+                />
+                <SummaryStat 
+                    icon={Scale}
+                    title="Costo de Ventas (CMV)"
+                    value={`$${costOfGoodsSold.toLocaleString()}`}
+                    description="Costo de la mercadería vendida."
+                />
+                <SummaryStat 
+                    icon={HandCoins}
+                    title="Ganancia Bruta"
+                    value={`$${grossProfit.toLocaleString()}`}
+                    description={`${grossProfitMargin.toFixed(1)}% Margen`}
+                    className={grossProfitColor}
+                />
+            </div>
+        </div>
+
+        <Separator />
+
+        <div>
+            <h3 className="text-lg font-semibold mb-6 text-primary flex items-center gap-2">
+                <Landmark />
+                Posición Actual del Inventario
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 text-foreground">
+                <SummaryStat 
+                    icon={Banknote}
+                    title="Capital Invertido"
+                    value={`$${currentInvestedCapital.toLocaleString()}`}
+                    description="Costo del stock sin vender."
+                />
+                <SummaryStat 
+                    icon={TrendingUp}
+                    title="Valor de Mercado"
+                    value={`$${currentStockValue.toLocaleString()}`}
+                    description="Valor del stock a precio de hoy."
+                />
+                <SummaryStat 
+                    icon={isUnrealizedUp ? ArrowUp : ArrowDown}
+                    title="G/P Potencial"
+                    value={`$${unrealizedPnl.toLocaleString()}`}
+                    description={`${unrealizedPnlPercent.toFixed(1)}% Retorno Potencial`}
+                    className={unrealizedPnlColor}
+                />
             </div>
         </div>
 
@@ -208,11 +276,12 @@ export function InventorySummary({
                                 <TableRow>
                                     <TableHead>Producto</TableHead>
                                     <TableHead className="text-right">Monto</TableHead>
+                                    <TableHead className="text-right">Estado</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {recentSales.map(sale => (
-                                    <TableRow key={sale.date}>
+                                {recentSales.map((sale, index) => (
+                                    <TableRow key={`${sale.date}-${index}`}>
                                         <TableCell>
                                             <div className="font-medium">{sale.productName}</div>
                                             <div className="text-xs text-muted-foreground">
@@ -221,6 +290,12 @@ export function InventorySummary({
                                         </TableCell>
                                         <TableCell className="text-right font-mono">
                                             +${(sale.quantity * sale.salePrice).toLocaleString()}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Badge variant={sale.status === 'Pagado' ? 'default' : 'secondary'}
+                                                className={cn(sale.status === 'Pagado' && 'bg-success/80 text-success-foreground', sale.status === 'Pendiente' && 'bg-amber-600/80 text-amber-50')}>
+                                                {sale.status}
+                                            </Badge>
                                         </TableCell>
                                     </TableRow>
                                 ))}
