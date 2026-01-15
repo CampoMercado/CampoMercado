@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, UserCog, LogOut, LayoutDashboard } from 'lucide-react';
+import { ArrowRight, UserCog, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -15,7 +15,6 @@ export function Header() {
   const auth = useAuth();
   const { user } = useUser();
   const isAdminPage = pathname.startsWith('/admin');
-  const isDashboardPage = pathname.startsWith('/dashboard');
 
   const handleSignOut = async () => {
     if(!auth) return;
@@ -37,21 +36,6 @@ export function Header() {
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center">
-            {user && (
-                 <Button
-                    asChild
-                    variant="ghost"
-                    className={cn(
-                    'text-green-400 hover:bg-green-900 hover:text-green-200',
-                    isDashboardPage && 'bg-green-800/80 text-green-100'
-                    )}
-                >
-                    <Link href="/dashboard">
-                    <LayoutDashboard className="h-5 w-5" />
-                    <span className="ml-2 hidden sm:inline">Mi Dashboard</span>
-                    </Link>
-                </Button>
-            )}
             {user && (
                  <Button
                     asChild

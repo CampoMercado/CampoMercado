@@ -1,4 +1,5 @@
 
+
 export type PriceHistory = {
   date: string;
   price: number;
@@ -54,7 +55,6 @@ export type UserProfile = {
     id: string;
     fullName: string;
     email: string;
-    dashboardType?: 'own_stall' | 'third_party';
 }
 
 export type InventoryItem = {
