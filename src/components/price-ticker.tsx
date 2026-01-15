@@ -1,7 +1,7 @@
 'use client';
 
 import type { AggregatedProduct } from '@/lib/types';
-import { ArrowDown, ArrowUp, TrendingDown, TrendingUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, TrendingDown, TrendingUp, Weight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useMemo } from 'react';
 
@@ -14,7 +14,7 @@ export function PriceTicker({ products }: { products: AggregatedProduct[] }) {
     const isDown = change < 0;
 
     return {
-      name: `${product.name} (${product.variety.slice(0,3)})`,
+      name: `${product.name} (${product.variety ? product.variety.slice(0,3) : ''})`,
       price: currentPrice,
       isUp,
       isDown,
@@ -77,7 +77,7 @@ export function TopMoversTicker({ products }: { products: AggregatedProduct[] })
             const change = currentPrice - prevPrice;
             const changePercent = prevPrice > 0 ? (change / prevPrice) * 100 : 0;
             return {
-                name: `${product.name} (${product.variety})`,
+                name: `${product.name} ${product.variety ? `(${product.variety})` : ''}`,
                 changePercent,
             };
         }).filter(p => p.changePercent !== 0);
@@ -128,6 +128,49 @@ export function TopMoversTicker({ products }: { products: AggregatedProduct[] })
             >
               {item.changePercent > 0 ? <TrendingUp className="h-3 w-3 mr-1" /> : <TrendingDown className="h-3 w-3 mr-1" />}
               {item.changePercent.toFixed(2)}%
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function PricePerKgTicker({ products }: { products: AggregatedProduct[] }) {
+  const tickerItems = products.filter(p => p.weightPerCrate > 0 && p.priceHistory.length > 0).map((product) => {
+    const currentPrice = product.priceHistory.at(0)!.price;
+    const pricePerKg = currentPrice / product.weightPerCrate;
+    
+    return {
+      name: `${product.name} ${product.variety ? `(${product.variety.slice(0,3)})` : ''}`,
+      pricePerKg: pricePerKg,
+    };
+  });
+
+  if (tickerItems.length === 0) return null;
+
+  const extendedTickerItems = [...tickerItems, ...tickerItems];
+
+  return (
+    <div className="relative flex overflow-hidden bg-gray-950 text-accent border-b border-green-800 py-2">
+      <div className="flex animate-marquee whitespace-nowrap">
+        {extendedTickerItems.map((item, index) => (
+          <div key={`item-kg1-${index}`} className="flex items-center mx-4 text-xs">
+            <Weight className="h-4 w-4 mr-2 text-accent/70" />
+            <span className="font-bold uppercase text-accent/80">{item.name}</span>
+            <span className="mx-2 text-base font-mono text-accent">
+              ${item.pricePerKg.toFixed(2)}/kg
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="absolute top-0 flex animate-marquee2 whitespace-nowrap py-2">
+        {extendedTickerItems.map((item, index) => (
+          <div key={`item-kg2-${index}`} className="flex items-center mx-4 text-xs">
+            <Weight className="h-4 w-4 mr-2 text-accent/70" />
+            <span className="font-bold uppercase text-accent/80">{item.name}</span>
+            <span className="mx-2 text-base font-mono text-accent">
+              ${item.pricePerKg.toFixed(2)}/kg
             </span>
           </div>
         ))}

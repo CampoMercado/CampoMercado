@@ -17,9 +17,13 @@
         "category": {
           "type": "string",
           "description": "Category of the produce (e.g., Fruit, Vegetable)."
+        },
+        "weightPerCrate": {
+            "type": "number",
+            "description": "Weight in kilograms per crate."
         }
       },
-      "required": ["name", "variety", "category"]
+      "required": ["name", "category", "weightPerCrate"]
     },
     "Price": {
       "title": "Price",

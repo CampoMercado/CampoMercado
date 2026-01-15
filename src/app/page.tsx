@@ -6,7 +6,7 @@ import type { Produce, Price, AggregatedProduct } from '@/lib/types';
 import { collection } from 'firebase/firestore';
 
 import { Header } from '@/components/header';
-import { PriceTicker, TopMoversTicker } from '@/components/price-ticker';
+import { PriceTicker, TopMoversTicker, PricePerKgTicker } from '@/components/price-ticker';
 import { ProductCard } from '@/components/product-card';
 import { SeasonalAvailability } from '@/components/seasonal-availability';
 import { BrokerChart } from '@/components/broker-chart';
@@ -41,8 +41,11 @@ export default function Home() {
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(
     null
   );
-  const year = new Date().getFullYear();
+  const [year, setYear] = useState(new Date().getFullYear());
 
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   useEffect(() => {
     // Simplified loading state management
@@ -168,6 +171,7 @@ export default function Home() {
         <Header />
         <PriceTicker products={aggregatedProducts} />
         <TopMoversTicker products={aggregatedProducts} />
+        <PricePerKgTicker products={aggregatedProducts} />
 
         <main className="flex-grow container py-8 space-y-8">
           <div>

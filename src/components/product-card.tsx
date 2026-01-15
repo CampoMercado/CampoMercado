@@ -48,7 +48,7 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
       historicalMin,
       historicalMax,
     };
-  }, [product, marketProducts]);
+  }, [product]);
 
   if (!productAnalysis) return null;
 
@@ -98,7 +98,7 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
         <TableCell className="text-right py-3 px-4 w-[100px]">
           <ChangeIndicator value={changePercent} label="Var."/>
         </TableCell>
-        <TableCell className="py-3 px-4 w-[160px]">
+        <TableCell className="hidden md:table-cell py-3 px-4 w-[160px]">
            <div className="flex items-center justify-between">
              <div className="text-xs text-muted-foreground">
                 {prevPriceData ? format(new Date(prevPriceData.date), "d MMM", { locale: es }) : 'Precio Ant.'}:
@@ -110,7 +110,7 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
             <div className="text-sm font-mono text-accent">{volatility.toFixed(1)}%</div>
           </div>
         </TableCell>
-         <TableCell className="py-3 px-4 w-[160px]">
+         <TableCell className="hidden md:table-cell py-3 px-4 w-[160px]">
           <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">Mín. Histórico:</div>
             <div className="text-sm font-mono text-danger">${historicalMin.toLocaleString()}</div>
@@ -120,7 +120,7 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
             <div className="text-sm font-mono text-success">${historicalMax.toLocaleString()}</div>
           </div>
         </TableCell>
-        <TableCell className="py-3 px-4 w-[160px]">
+        <TableCell className="py-3 px-4 w-[200px]">
           <div className="flex items-center gap-2">
             <span
               className={cn(

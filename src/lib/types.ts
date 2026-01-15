@@ -8,6 +8,7 @@ export type Product = {
   name: string;
   variety: string;
   category: string;
+  weightPerCrate: number;
   priceHistory: PriceHistory[];
 };
 
@@ -16,6 +17,7 @@ export type Produce = {
   name: string;
   variety: string;
   category: string;
+  weightPerCrate: number;
 };
 
 export type Price = {

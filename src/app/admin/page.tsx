@@ -45,8 +45,9 @@ import { useToast } from '@/hooks/use-toast';
 
 const newProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido.'),
-  variety: z.string().min(1, 'La variedad es requerida.'),
+  variety: z.string().optional(),
   category: z.string().min(1, 'La categoría es requerida.'),
+  weightPerCrate: z.coerce.number().positive('El peso por cajón debe ser positivo.'),
   price: z.coerce.number().positive('El precio inicial debe ser positivo.'),
 });
 
@@ -109,6 +110,7 @@ export default function AdminPage() {
       name: '',
       variety: '',
       category: '',
+      weightPerCrate: 0,
       price: 0,
     },
   });
@@ -162,8 +164,9 @@ export default function AdminPage() {
   const handleAddNewProduct = (data: NewProductFormData) => {
     const newProduce = {
         name: data.name,
-        variety: data.variety,
-        category: data.category
+        variety: data.variety || '',
+        category: data.category,
+        weightPerCrate: data.weightPerCrate,
     };
 
     addDocumentNonBlocking(producesRef, newProduce).then(docRef => {
@@ -302,7 +305,7 @@ export default function AdminPage() {
                     name="variety"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Variedad</FormLabel>
+                        <FormLabel>Variedad (Opcional)</FormLabel>
                         <FormControl>
                           <Input placeholder="Ej: Redondo" {...field} />
                         </FormControl>
@@ -321,6 +324,19 @@ export default function AdminPage() {
                             placeholder="Ej: Hortalizas de Fruto"
                             {...field}
                           />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={newProductForm.control}
+                    name="weightPerCrate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Peso por Cajón (kg)</FormLabel>
+                        <FormControl>
+                           <Input type="number" placeholder="Ej: 20" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
