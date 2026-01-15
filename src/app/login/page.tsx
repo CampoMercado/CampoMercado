@@ -65,10 +65,12 @@ export default function LoginPage() {
   });
 
   const handleLogin = async (data: LoginFormData) => {
+    if (!auth) return;
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
       router.push('/');
     } catch (error: any) {
+      console.error(error);
       toast({
         variant: 'destructive',
         title: 'Error de Autenticación',

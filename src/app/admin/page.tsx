@@ -14,7 +14,7 @@ import {
   useFirestore,
   useMemoFirebase,
 } from '@/firebase';
-import { setDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Produce, Price, AggregatedProduct } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
@@ -187,26 +187,37 @@ export default function AdminPage() {
   };
 
   const handleDeleteProduct = async (productId: string) => {
-    
-    // 1. Delete the product document
-    const produceDocRef = doc(firestore, 'produces', productId);
-    deleteDocumentNonBlocking(produceDocRef);
-    
-    // 2. Query and delete all associated prices
-    const pricesToDeleteQuery = query(pricesRef, where('produceId', '==', productId));
-    
-    const pricesSnapshot = await getDocs(pricesToDeleteQuery);
-    const batch = writeBatch(firestore);
-    pricesSnapshot.forEach(doc => {
-      batch.delete(doc.ref);
-    });
-    await batch.commit();
+    if (!firestore) return;
+    try {
+      const batch = writeBatch(firestore);
 
-    toast({
-      title: 'Producto Eliminado',
-      description: 'El producto y su historial de precios han sido eliminados.',
-      variant: 'destructive',
-    });
+      // 1. Delete the product document
+      const produceDocRef = doc(firestore, 'produces', productId);
+      batch.delete(produceDocRef);
+      
+      // 2. Query and delete all associated prices
+      const pricesToDeleteQuery = query(pricesRef, where('produceId', '==', productId));
+      
+      const pricesSnapshot = await getDocs(pricesToDeleteQuery);
+      pricesSnapshot.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+
+      await batch.commit();
+
+      toast({
+        title: 'Producto Eliminado',
+        description: 'El producto y su historial de precios han sido eliminados.',
+        variant: 'destructive',
+      });
+    } catch(e) {
+        console.error("Error deleting product and associated prices: ", e);
+        toast({
+            title: 'Error al eliminar',
+            description: 'No se pudo eliminar el producto y sus precios. Inténtelo de nuevo.',
+            variant: 'destructive',
+        });
+    }
   };
   
   const isLoading = isLoadingProduces || isLoadingPrices;
