@@ -14,13 +14,13 @@ export default function AdminLayout({
             Panel de Administrador
           </h1>
           <p className="text-muted-foreground">
-            Gestionar productos y precios de Campo -&gt; Mercado
+            Gestionar productos y precios de Campo Mercado
           </p>
         </div>
         {children}
       </main>
       <footer className="container py-6 text-center text-muted-foreground text-sm">
-        © {new Date().getFullYear()} Campo -&gt; Mercado.
+        © {new Date().getFullYear()} Campo Mercado.
       </footer>
     </div>
   );

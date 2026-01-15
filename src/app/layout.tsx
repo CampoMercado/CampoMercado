@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'Campo -> Mercado',
+  title: 'Campo Mercado',
   description:
     'Wall Street for fruits and vegetables from Mercado Cooperativo de Guaymallén.',
 };

@@ -186,7 +186,7 @@ export default function Home() {
       </main>
 
       <footer className="container py-6 text-center text-green-600/50 text-xs">
-        © {new Date().getFullYear()} CAMPO -&gt; MERCADO. TODOS LOS DERECHOS RESERVADOS.
+        © {new Date().getFullYear()} CAMPO MERCADO. TODOS LOS DERECHOS RESERVADOS.
       </footer>
     </div>
   );
