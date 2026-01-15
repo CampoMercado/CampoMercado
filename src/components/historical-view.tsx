@@ -55,6 +55,13 @@ export function HistoricalView({ products }: { products: AggregatedProduct[] }) 
     });
   }, [products]);
 
+  const sortedProducts = useMemo(() => {
+    return products.map(p => ({
+        ...p,
+        priceHistory: [...p.priceHistory].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    }));
+  }, [products]);
+
   return (
     <div className="space-y-12">
       <div>
@@ -66,7 +73,7 @@ export function HistoricalView({ products }: { products: AggregatedProduct[] }) 
           Consulta el historial de precios completo para cada producto del mercado.
         </p>
         <Accordion type="single" collapsible className="w-full mt-6">
-          {products.map((product) => (
+          {sortedProducts.map((product) => (
             <AccordionItem key={product.id} value={product.id} className="border-b-green-900/50">
               <AccordionTrigger className="hover:no-underline text-green-300">
                 <div className="flex flex-col text-left">
@@ -83,7 +90,7 @@ export function HistoricalView({ products }: { products: AggregatedProduct[] }) 
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {[...product.priceHistory].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((entry) => (
+                    {product.priceHistory.map((entry) => (
                       <TableRow key={entry.date} className="border-green-900/30">
                         <TableCell>
                           {format(new Date(entry.date), 'Pp', { locale: es })}
