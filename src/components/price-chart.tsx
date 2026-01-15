@@ -17,6 +17,7 @@ import {
   ChartContainer,
   ChartTooltipContent,
 } from '@/components/ui/chart';
+import { cn } from '@/lib/utils';
 
 const chartConfig = {
   price: {
@@ -25,7 +26,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function PriceChart({ product, simple = false }: { product: AggregatedProduct, simple?: boolean }) {
+export function PriceChart({ product, simple = false, className }: { product: AggregatedProduct, simple?: boolean, className?: string }) {
   const chartData = [...product.priceHistory].reverse().map((item) => ({
     date: new Date(item.date),
     price: item.price,
@@ -35,7 +36,7 @@ export function PriceChart({ product, simple = false }: { product: AggregatedPro
 
   if (simple) {
      return (
-        <ChartContainer config={chartConfig} className="h-[40px] w-[120px]">
+        <ChartContainer config={chartConfig} className={cn("h-full w-full", className)}>
           <AreaChart
             data={chartData}
             margin={{ left: 0, right: 0, top: 0, bottom: 0 }}

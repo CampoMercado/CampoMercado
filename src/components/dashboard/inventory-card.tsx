@@ -16,12 +16,6 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -34,18 +28,17 @@ import {
   ArrowUp,
   Minus,
   Package,
-  Tag,
-  TrendingUp,
-  Wallet,
   MoreVertical,
   Trash2,
   Move,
   DollarSign,
 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 import { DeleteInventoryDialog } from './actions/delete-inventory-dialog';
 import { MoveStockDialog } from './actions/move-stock-dialog';
 import { RecordSaleDialog } from './actions/record-sale-dialog';
+import { PriceChart } from '../price-chart';
 
 
 type InventoryCardProps = {
@@ -55,34 +48,14 @@ type InventoryCardProps = {
   onRecordSale: (itemId: string, quantity: number, salePrice: number, remainingQuantity: number) => void;
 };
 
-const Stat = ({
-  icon: Icon,
-  label,
-  value,
-  className,
-  tooltip,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  className?: string;
-  tooltip?: string;
-}) => (
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="flex items-center gap-3">
-          <Icon className="h-5 w-5 text-muted-foreground" />
-          <div>
-            <div className="text-xs text-muted-foreground">{label}</div>
-            <div className={cn('text-sm font-semibold', className)}>{value}</div>
-          </div>
-        </div>
-      </TooltipTrigger>
-      {tooltip && <TooltipContent>{tooltip}</TooltipContent>}
-    </Tooltip>
-  </TooltipProvider>
+
+const FinancialStat = ({ label, value, className }: { label: string; value: string; className?: string }) => (
+    <div className="flex justify-between items-center text-xs">
+        <span className="text-muted-foreground">{label}</span>
+        <span className={cn("font-mono font-medium", className)}>{value}</span>
+    </div>
 );
+
 
 export function InventoryCard({ item, onDeleteItem, onSplitStock, onRecordSale }: InventoryCardProps) {
   const { produce, quantity, purchasePrice, purchaseDate, status } = item;
@@ -95,30 +68,25 @@ export function InventoryCard({ item, onDeleteItem, onSplitStock, onRecordSale }
     if (!produce || produce.priceHistory.length === 0) {
       return {
         marketPrice: 0,
-        purchaseValue: 0,
-        marketValue: 0,
-        potentialPnl: 0,
-        potentialPnlPercent: 0,
+        pnlPerUnit: 0,
+        pnlTotal: 0,
+        pnlPercent: 0,
       };
     }
     const marketPrice = produce.priceHistory[0].price;
-    const purchaseValue = purchasePrice * quantity;
-    const marketValue = marketPrice * quantity;
-    const potentialPnl = marketValue - purchaseValue;
-    const potentialPnlPercent =
-      purchaseValue > 0 ? (potentialPnl / purchaseValue) * 100 : 0;
+    const pnlPerUnit = marketPrice - purchasePrice;
+    const pnlTotal = pnlPerUnit * quantity;
+    const pnlPercent = purchasePrice > 0 ? (pnlPerUnit / purchasePrice) * 100 : 0;
 
     return {
       marketPrice,
-      purchaseValue,
-      marketValue,
-      potentialPnl,
-      potentialPnlPercent,
+      pnlPerUnit,
+      pnlTotal,
+      pnlPercent,
     };
   }, [produce, quantity, purchasePrice]);
 
-  const { marketValue, purchaseValue, potentialPnl, potentialPnlPercent } =
-    valuation;
+  const { marketPrice, pnlPerUnit, pnlTotal, pnlPercent } = valuation;
 
   if (!produce) {
     return (
@@ -138,27 +106,22 @@ export function InventoryCard({ item, onDeleteItem, onSplitStock, onRecordSale }
     );
   }
 
-  const isUp = potentialPnl > 0;
-  const isDown = potentialPnl < 0;
-  const pnlColor = isUp
-    ? 'text-success'
-    : isDown
-    ? 'text-danger'
-    : 'text-muted-foreground';
+  const isUp = pnlPerUnit > 0;
+  const isDown = pnlPerUnit < 0;
+  const pnlColor = isUp ? 'text-success' : isDown ? 'text-danger' : 'text-muted-foreground';
   const PnlIcon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
 
   return (
     <>
-      <Card className="flex flex-col bg-card/80 hover:bg-card/100 hover:border-primary/50 transition-all duration-300 border">
-        <CardHeader>
-          <div className="flex justify-between items-start">
+      <Card className="flex flex-col bg-card/80 hover:bg-card/100 hover:border-primary/50 transition-all duration-300 border overflow-hidden">
+        <CardHeader className="flex flex-row justify-between items-start pb-2">
             <div>
-              <CardTitle className="text-lg">{produce.name}</CardTitle>
-              <CardDescription>{produce.variety}</CardDescription>
+              <CardTitle className="text-base">{produce.name}</CardTitle>
+              <CardDescription className='text-xs'>{produce.variety}</CardDescription>
             </div>
              <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mt-2 -mr-2">
                   <MoreVertical size={16} />
                 </Button>
               </DropdownMenuTrigger>
@@ -181,49 +144,52 @@ export function InventoryCard({ item, onDeleteItem, onSplitStock, onRecordSale }
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-          <Badge variant="outline" className="mt-2 w-fit">
-            {status}
-          </Badge>
         </CardHeader>
-        <CardContent className="space-y-4 flex-grow">
-          <Stat
-            icon={Package}
-            label="Stock"
-            value={`${quantity} cajones`}
-            tooltip={`Comprado el ${format(new Date(purchaseDate), 'PPP', {
-              locale: es,
-            })}`}
-          />
-          <Stat
-            icon={Tag}
-            label="Valor de Compra"
-            value={`$${purchaseValue.toLocaleString()}`}
-            tooltip={`$${purchasePrice.toLocaleString()} por cajón`}
-          />
-          <Stat
-            icon={Wallet}
-            label="Valor de Mercado"
-            value={`$${marketValue.toLocaleString()}`}
-            tooltip={`$${(
-              produce.priceHistory[0]?.price ?? 0
-            ).toLocaleString()} precio de mercado actual por cajón`}
-          />
+        
+        <CardContent className="grid grid-cols-5 gap-x-4 pt-2 pb-4">
+            <div className="col-span-2 space-y-2">
+                <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold">{quantity}</span>
+                    <span className="text-xs text-muted-foreground">cajones</span>
+                </div>
+                <Badge variant="outline" className="w-fit text-xs">{status}</Badge>
+                <p className='text-xs text-muted-foreground pt-1'>
+                    Comprado: {format(new Date(purchaseDate), 'P', { locale: es })}
+                </p>
+            </div>
+            <div className="col-span-3 space-y-1.5">
+                <FinancialStat 
+                    label="Tu Precio Compra" 
+                    value={`$${purchasePrice.toLocaleString()}`}
+                />
+                <FinancialStat 
+                    label="Precio Mercado" 
+                    value={`$${marketPrice.toLocaleString()}`}
+                />
+                <Separator className="my-1.5"/>
+                <FinancialStat 
+                    label="G/P Unitario" 
+                    value={`$${pnlPerUnit.toLocaleString()}`}
+                    className={pnlColor}
+                />
+                 <FinancialStat 
+                    label="G/P Total" 
+                    value={`$${pnlTotal.toLocaleString()}`}
+                    className={cn("font-bold", pnlColor)}
+                />
+            </div>
         </CardContent>
-        <CardFooter className="flex-col items-start pt-4 border-t mt-auto bg-muted/30">
-          <div className="flex justify-between items-center w-full">
-            <div className="text-sm font-semibold flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-muted-foreground" />
-              G/P Potencial
+
+        <CardFooter className="p-0 mt-auto">
+            <div className="relative w-full h-[60px]">
+                 <div className="absolute top-2 right-2 z-10 font-mono text-lg font-bold flex items-center gap-1" style={{ textShadow: '1px 1px 3px black' }}>
+                    <PnlIcon size={16} className={pnlColor} />
+                    <span className={pnlColor}>{pnlPercent.toFixed(1)}%</span>
+                </div>
+                {produce.priceHistory.length > 1 && (
+                    <PriceChart product={produce} simple />
+                )}
             </div>
-            <div className={cn('text-right font-mono', pnlColor)}>
-              <div className="font-bold text-lg flex items-center justify-end gap-1">
-                <PnlIcon size={16} />
-                {potentialPnlPercent.toFixed(1)}%
-              </div>
-              <div className="text-xs">${potentialPnl.toLocaleString()}</div>
-            </div>
-          </div>
         </CardFooter>
       </Card>
       
