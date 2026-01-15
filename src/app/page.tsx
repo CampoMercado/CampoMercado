@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import type { Produce, Price, AggregatedProduct } from '@/lib/types';
-import { collection } from 'firebase/firestore';
+import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
+import type { Produce, Price, AggregatedProduct, UserProfile } from '@/lib/types';
+import { collection, doc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 import { Header } from '@/components/header';
 import { PriceTicker, TopMoversTicker, PricePerKgTicker } from '@/components/price-ticker';
@@ -23,15 +24,17 @@ import {
 import { MarketSummary } from '@/components/market-summary';
 import { MarketStatus } from '@/components/market-status';
 import { HistoricalView } from '@/components/historical-view';
-import { DesktopOnlyView } from '@/components/desktop-only-view';
 
 type View = 'prices' | 'chart' | 'summary' | 'availability' | 'history';
 
 export default function Home() {
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
   const firestore = useFirestore();
+
   const producesRef = useMemoFirebase(() => collection(firestore, 'produces'), [firestore]);
   const pricesRef = useMemoFirebase(() => collection(firestore, 'prices'), [firestore]);
-
+  
   const { data: producesData, isLoading: isLoadingProduces } = useCollection<Produce>(producesRef);
   const { data: pricesData, isLoading: isLoadingPrices } = useCollection<Price>(pricesRef);
 
@@ -42,6 +45,12 @@ export default function Home() {
     null
   );
   const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -159,15 +168,15 @@ export default function Home() {
     </div>
   );
   
-  const isLoading = isLoadingProduces || isLoadingPrices;
+  const isLoading = isUserLoading || isLoadingProduces || isLoadingPrices;
 
-  if (appState !== 'ready' || isLoading) {
+  if (appState !== 'ready' || isLoading || !user) {
     return <LoadingSkeleton />;
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-green-400 animate-fade-in">
-      <DesktopOnlyView>
+      
         <Header />
         <PriceTicker products={aggregatedProducts} />
         <TopMoversTicker products={aggregatedProducts} />
@@ -210,7 +219,6 @@ export default function Home() {
         <footer className="container py-6 text-center text-green-600/50 text-xs">
           {`© ${year} CAMPO MERCADO. TODOS LOS DERECHOS RESERVADOS.`}
         </footer>
-      </DesktopOnlyView>
     </div>
   );
 }

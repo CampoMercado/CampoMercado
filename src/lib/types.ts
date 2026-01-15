@@ -15,7 +15,7 @@ export type Product = {
 export type Produce = {
   id: string;
   name: string;
-  variety: string;
+  variety?: string;
   category: string;
   weightPerCrate: number;
 };
@@ -48,3 +48,9 @@ export type NewsArticle = {
   source: string;
   content: string;
 };
+
+export type UserProfile = {
+    id: string;
+    fullName: string;
+    email: string;
+}

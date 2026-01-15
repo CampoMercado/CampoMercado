@@ -3,10 +3,12 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { LogIn } from 'lucide-react';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,19 +28,33 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido.'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres.'),
+  password: z.string().min(1, 'La contraseña es requerida.'),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const auth = useAuth();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
-  const year = new Date().getFullYear();
+  const [year, setYear] = useState(new Date().getFullYear());
+  const justSignedUp = searchParams.get('new') === 'true';
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
+  useEffect(() => {
+    if (!isUserLoading && user) {
+      router.push('/');
+    }
+  }, [user, isUserLoading, router]);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -51,7 +67,7 @@ export default function LoginPage() {
   const handleLogin = async (data: LoginFormData) => {
     try {
       await signInWithEmailAndPassword(auth, data.email, data.password);
-      router.push('/admin');
+      router.push('/');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -62,47 +78,43 @@ export default function LoginPage() {
     }
   };
 
-  // As the username is not an email, we'll construct one.
-  const presetEmail = "ignacioenriquearra@campo-mercado.com";
+  if (isUserLoading || (!isUserLoading && user)) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background">
+        Cargando...
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-      <Card className="mx-auto max-w-sm">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+      <Card className="mx-auto w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Acceso de Administrador</CardTitle>
+          <CardTitle className="text-2xl">Bienvenido a Campo Mercado</CardTitle>
           <CardDescription>
-            Ingrese sus credenciales para gestionar el mercado.
+            Ingrese sus credenciales para acceder a su panel.
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {justSignedUp && (
+            <Alert className="mb-4 bg-green-950 border-green-800">
+                <AlertDescription className="text-green-300">
+                    ¡Registro exitoso! Ya puede iniciar sesión.
+                </AlertDescription>
+            </Alert>
+          )}
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Usuario</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="usuario" 
-                        {...field} 
-                        onChange={(e) => {
-                            if(e.target.value === "IgnacioEnriqueArra"){
-                                field.onChange(presetEmail);
-                            } else {
-                                field.onChange(e);
-                            }
-                        }}
-                        onBlur={(e) => {
-                            if(field.value !== presetEmail) {
-                                if(e.target.value === "IgnacioEnriqueArra"){
-                                    field.onChange(presetEmail);
-                                } else {
-                                     field.onChange(e);
-                                }
-                            }
-                        }}
+                        placeholder="su@email.com" 
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -122,15 +134,21 @@ export default function LoginPage() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
                 <LogIn className="mr-2 h-4 w-4" />
                 Ingresar
               </Button>
             </form>
           </Form>
+          <div className="mt-4 text-center text-sm">
+            ¿No tiene una cuenta?{' '}
+            <Link href="/signup" className="underline text-primary">
+              Regístrese aquí
+            </Link>
+          </div>
         </CardContent>
       </Card>
-       <footer className="container py-6 text-center text-muted-foreground text-sm">
+       <footer className="container py-6 text-center text-muted-foreground text-sm absolute bottom-0">
         {`© ${year} Campo Mercado.`}
       </footer>
     </div>

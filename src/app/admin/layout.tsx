@@ -6,6 +6,9 @@ import { useUser } from '@/firebase';
 import { Header } from '@/components/header';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 
+// This is a simplified check. For a real app, you'd use custom claims.
+const ADMIN_EMAILS = ['ignacioenriquearra@campo-mercado.com'];
+
 export default function AdminLayout({
   children,
 }: {
@@ -13,18 +16,28 @@ export default function AdminLayout({
 }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
-  const year = new Date().getFullYear();
+  const [year, setYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
+    setYear(new Date().getFullYear());
+  }, []);
+
+  useEffect(() => {
+    if (isUserLoading) return; // Wait until user status is resolved
+
+    if (!user) {
+      router.push('/login'); // Not logged in
+    } else if (!ADMIN_EMAILS.includes(user.email || '')) {
+      router.push('/'); // Logged in but not an admin
     }
   }, [user, isUserLoading, router]);
   
-  if (isUserLoading || !user) {
+  // Show loading skeleton while checking auth and admin status
+  if (isUserLoading || !user || !ADMIN_EMAILS.includes(user.email || '')) {
     return <LoadingSkeleton />;
   }
 
+  // Render admin content if checks pass
   return (
     <div className="flex flex-col min-h-screen">
       <Header />

@@ -13,9 +13,8 @@ import {
   useCollection,
   useFirestore,
   useMemoFirebase,
-  addDocumentNonBlocking,
-  deleteDocumentNonBlocking,
 } from '@/firebase';
+import { setDocumentNonBlocking, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import type { Produce, Price, AggregatedProduct } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';

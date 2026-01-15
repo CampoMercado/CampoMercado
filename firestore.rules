@@ -5,18 +5,25 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function isAdmin() {
-      // For now, we consider any authenticated user an "admin".
-      // This allows anonymous users to write, which is necessary for the current app setup.
+      // For now, we consider any authenticated user an "admin" for price updates.
+      // This is a placeholder and should be replaced with real role-based security.
       return request.auth != null;
     }
 
+    // Protect user profiles: only the user can read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
     match /produces/{produceId} {
-      allow read: if true;
+      // Any authenticated user can read produce data
+      allow read: if request.auth != null;
       allow write: if isAdmin();
     }
 
     match /prices/{priceId} {
-      allow read: if true;
+      // Any authenticated user can read price data
+      allow read: if request.auth != null;
       allow write: if isAdmin();
     }
   }
