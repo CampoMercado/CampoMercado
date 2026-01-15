@@ -64,7 +64,7 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
     const Icon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
     return (
        <div className="font-medium">
-            <div className="text-sm text-muted-foreground">{label}</div>
+            <div className="text-xs text-muted-foreground">{label}</div>
             <div className={cn('flex items-center justify-end gap-1 text-xs font-mono', isUp && 'text-success', isDown && 'text-danger')}>
                 <Icon size={12} />
                 <span>{value.toFixed(1)}%</span>
@@ -79,26 +79,30 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
 
   return (
     <>
-      <TableRow className="border-green-900/50 hover:bg-green-900/10">
-        <TableCell className="py-3 px-2">
-          <div className="font-bold text-base text-green-300">{product.name}</div>
+      <TableRow 
+        className="border-green-900/50 hover:bg-green-900/10 cursor-pointer"
+        onClick={() => setChartOpen(true)}
+        title="Ver gráfico detallado"
+      >
+        <TableCell className="py-3 px-4">
+          <div className="font-bold text-sm md:text-base text-green-300">{product.name}</div>
           <div className="text-xs text-green-500">{product.variety}</div>
         </TableCell>
         <TableCell className={cn(
-            "text-right py-3 px-2 transition-all duration-500",
+            "text-right py-3 px-4 transition-all duration-500",
              isHighlighted && "border-y-2 border-accent/80 bg-accent/10"
             )}>
-          <span className="text-2xl font-mono text-green-200">
+          <span className="text-xl md:text-2xl font-mono text-green-200">
             ${currentPrice.toLocaleString()}
           </span>
-           <div className="text-xs text-muted-foreground mt-1 text-right">
+           <div className="text-xs text-muted-foreground mt-1 text-right hidden sm:block">
               {lastUpdateLabel}
             </div>
         </TableCell>
-        <TableCell className="text-right py-3 px-2 w-[100px]">
+        <TableCell className="text-right py-3 px-4 w-[100px]">
           <ChangeIndicator value={changePercent} label="Var."/>
         </TableCell>
-        <TableCell className="py-3 px-2 w-[160px] hidden md:table-cell">
+        <TableCell className="py-3 px-4 w-[160px] hidden md:table-cell">
            <div className="flex items-center justify-between">
              <div className="text-xs text-muted-foreground">
                 {prevPriceData ? format(new Date(prevPriceData.date), "d MMM", { locale: es }) : 'Precio Ant.'}:
@@ -110,7 +114,7 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
             <div className="text-sm font-mono text-accent">{volatility.toFixed(1)}%</div>
           </div>
         </TableCell>
-         <TableCell className="py-3 px-2 w-[160px] hidden lg:table-cell">
+         <TableCell className="py-3 px-4 w-[160px] hidden lg:table-cell">
           <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">Mín. Mercado:</div>
             <div className="text-sm font-mono text-danger">${marketMin.toLocaleString()}</div>
@@ -121,9 +125,7 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
           </div>
         </TableCell>
         <TableCell 
-            className="w-[120px] hidden sm:table-cell py-3 px-2 cursor-pointer"
-            onClick={() => setChartOpen(true)}
-            title="Ver gráfico detallado"
+            className="w-[120px] hidden sm:table-cell py-3 px-4"
         >
            <div className="flex items-center gap-2 justify-center">
               <span className={cn(
@@ -134,11 +136,14 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
                 {format(new Date(lastUpdate), 'HH:mm')}
               </div>
            </div>
+           <div className="text-xs text-muted-foreground mt-1 text-center sm:hidden">
+              {lastUpdateLabel}
+            </div>
         </TableCell>
       </TableRow>
 
       <Dialog open={isChartOpen} onOpenChange={setChartOpen}>
-        <DialogContent className="max-w-2xl p-0 border-green-500 bg-black">
+        <DialogContent className="max-w-2xl w-[95%] p-0 border-green-500 bg-black rounded-lg">
           <PriceChart product={product} />
         </DialogContent>
       </Dialog>

@@ -12,7 +12,6 @@ import { SeasonalAvailability } from '@/components/seasonal-availability';
 import { BrokerChart } from '@/components/broker-chart';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { WelcomeTerminal } from '@/components/welcome-terminal';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 import {
   Table,
@@ -36,38 +35,21 @@ export default function Home() {
   const { data: pricesData, isLoading: isLoadingPrices } = useCollection<Price>(pricesRef);
 
   const [activeView, setActiveView] = useState<View>('prices');
-  const [appState, setAppState] = useState('welcome'); // 'welcome', 'loading', 'ready'
+  const [appState, setAppState] = useState('loading'); // 'welcome', 'loading', 'ready'
   const [marketOpen, setMarketOpen] = useState(true); // Default to open, will be updated
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(
     null
   );
 
   useEffect(() => {
-    const welcomeShown = sessionStorage.getItem('welcomeShown');
-    if (welcomeShown) {
-      setAppState('loading');
-      const loadingTimer = setTimeout(() => {
-        setAppState('ready');
-      }, 1500); // Shorter loading time as we are not faking it as much
+    // Simplified loading state management
+    const loadingTimer = setTimeout(() => {
+      setAppState('ready');
+    }, 1500);
 
-      return () => {
-        clearTimeout(loadingTimer);
-      };
-    } else {
-      const welcomeTimer = setTimeout(() => {
-        sessionStorage.setItem('welcomeShown', 'true');
-        setAppState('loading');
-      }, 2500); // Sync with welcome animation
-
-      const loadingTimer = setTimeout(() => {
-        setAppState('ready');
-      }, 4000); // 2.5s (welcome) + 1.5s (loading)
-
-      return () => {
-        clearTimeout(welcomeTimer);
-        clearTimeout(loadingTimer);
-      };
-    }
+    return () => {
+      clearTimeout(loadingTimer);
+    };
   }, []);
   
   const aggregatedProducts = useMemo((): AggregatedProduct[] => {
@@ -137,20 +119,20 @@ export default function Home() {
         <Table>
           <TableHeader>
             <TableRow className="border-green-800/50 hover:bg-gray-900/50 text-xs uppercase">
-              <TableHead className="text-green-300 px-2">Producto</TableHead>
-              <TableHead className="text-right text-green-300 px-2">
+              <TableHead className="text-green-300 px-4">Producto</TableHead>
+              <TableHead className="text-right text-green-300 px-4">
                 Último Precio
               </TableHead>
-              <TableHead className="text-right text-green-300 px-2 w-[100px]">
+              <TableHead className="text-right text-green-300 px-4 w-[100px]">
                 Var.
               </TableHead>
-              <TableHead className="text-green-300 px-2 w-[160px] hidden md:table-cell">
+              <TableHead className="text-green-300 px-4 w-[160px] hidden md:table-cell">
                 Análisis
               </TableHead>
-              <TableHead className="text-green-300 px-2 w-[160px] hidden lg:table-cell">
+              <TableHead className="text-green-300 px-4 w-[160px] hidden lg:table-cell">
                 Mercado
               </TableHead>
-              <TableHead className="w-[120px] hidden sm:table-cell py-3 px-2 text-center text-green-300">
+              <TableHead className="w-[120px] hidden sm:table-cell py-3 px-4 text-center text-green-300">
                 Actividad
               </TableHead>
             </TableRow>
@@ -183,11 +165,11 @@ export default function Home() {
       <PriceTicker products={aggregatedProducts} />
       <TopMoversTicker products={aggregatedProducts} />
 
-      <main className="flex-grow container py-8 space-y-8">
+      <main className="flex-grow container py-6 md:py-8 space-y-8">
         <div>
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <h1 className="text-4xl lg:text-6xl font-headline tracking-widest text-green-300">
+              <h1 className="text-3xl md:text-4xl lg:text-6xl font-headline tracking-widest text-green-300">
                 MERCADO DIARIO
               </h1>
               <MarketStatus onStatusChange={setMarketOpen} />
@@ -198,10 +180,10 @@ export default function Home() {
           </div>
 
           <div className="border-b border-green-800/50 mb-6">
-            <div className="flex items-center space-x-2 flex-wrap">
+            <div className="flex items-center space-x-0 md:space-x-2 flex-wrap">
               <TabButton view="prices">Precios</TabButton>
-              <TabButton view="chart">Gráfico de Mercado</TabButton>
-              <TabButton view="summary">Resumen del Mercado</TabButton>
+              <TabButton view="chart">Gráfico</TabButton>
+              <TabButton view="summary">Resumen</TabButton>
               <TabButton view="availability">Disponibilidad</TabButton>
               <TabButton view="history">Históricos</TabButton>
             </div>

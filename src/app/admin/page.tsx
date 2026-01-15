@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PlusCircle, TriangleAlert } from 'lucide-react';
-import { collection, doc, writeBatch, serverTimestamp, where, query } from 'firebase/firestore';
+import { collection, doc, writeBatch, where, query } from 'firebase/firestore';
 
 import { validatePriceAction } from './actions';
 import { UpdatePriceRow } from '@/components/admin/update-price-row';
@@ -230,6 +230,7 @@ export default function AdminPage() {
                   variant={activeLetter === null ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setActiveLetter(null)}
+                  className='px-3'
                 >
                   Todos
                 </Button>
@@ -238,7 +239,7 @@ export default function AdminPage() {
                     key={letter}
                     variant={activeLetter === letter ? 'default' : 'outline'}
                     size="sm"
-                    className="w-9"
+                    className="w-8 h-8 md:w-9 md:h-9"
                     onClick={() => setActiveLetter(letter)}
                   >
                     {letter}
@@ -255,7 +256,7 @@ export default function AdminPage() {
                   <TableBody>
                     {isLoading ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center">
+                        <TableCell colSpan={6} className="text-center py-8">
                           Cargando productos...
                         </TableCell>
                       </TableRow>

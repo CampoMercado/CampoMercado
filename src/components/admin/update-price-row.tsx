@@ -37,9 +37,9 @@ export function UpdatePriceRow({
     return (
       <>
         <TableHead>Producto</TableHead>
-        <TableHead>Precio Actual</TableHead>
-        <TableHead>Última Act.</TableHead>
-        <TableHead className="w-[500px]">Nuevo Precio</TableHead>
+        <TableHead className="hidden sm:table-cell">Precio Actual</TableHead>
+        <TableHead className="hidden md:table-cell">Última Act.</TableHead>
+        <TableHead>Nuevo Precio</TableHead>
         <TableHead className="w-[130px]"></TableHead>
         <TableHead className="w-[50px]"></TableHead>
       </>
@@ -56,23 +56,24 @@ export function UpdatePriceRow({
         <div>{product.name}</div>
         <div className="text-xs text-muted-foreground">{product.variety}</div>
       </TableCell>
-      <TableCell>${lastPriceEntry?.price.toLocaleString() ?? 'N/A'}</TableCell>
-      <TableCell>
+      <TableCell className="hidden sm:table-cell">${lastPriceEntry?.price.toLocaleString() ?? 'N/A'}</TableCell>
+      <TableCell className='hidden md:table-cell'>
         {lastPriceEntry
           ? format(new Date(lastPriceEntry.date), 'P', { locale: es })
           : 'N/A'}
       </TableCell>
-      <TableCell className="w-[500px]">
+      <TableCell>
         <QuickPriceInput
           initialPrice={currentPrice}
           onChange={setNewPrice}
         />
       </TableCell>
-      <TableCell className="w-[130px]">
+      <TableCell className="w-[130px] text-right">
         <Button
           type="button"
           onClick={handleSubmit}
           disabled={isUpdating || newPrice === currentPrice}
+          size="sm"
         >
           {isUpdating ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
