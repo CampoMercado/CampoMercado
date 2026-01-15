@@ -6,7 +6,10 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { UserPlus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth, useFirestore } from '@/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +29,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { createUserAction } from './actions';
 
 const signupSchema = z.object({
   fullName: z.string().min(3, 'El nombre completo es requerido.'),
@@ -41,7 +43,13 @@ type SignupFormData = z.infer<typeof signupSchema>;
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
+  const firestore = useFirestore();
   const [year, setYear] = useState(new Date().getFullYear());
+  
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -53,25 +61,49 @@ export default function SignupPage() {
   });
 
   const handleSignup = async (data: SignupFormData) => {
+    if (!auth || !firestore) {
+      toast({
+        variant: 'destructive',
+        title: 'Error de Configuración',
+        description: 'Los servicios de Firebase no están disponibles.',
+      });
+      return;
+    }
+
     try {
-      const result = await createUserAction(data);
-      if (result.success) {
-        toast({
-          title: '¡Registro Exitoso!',
-          description: 'Ya puedes iniciar sesión con tus credenciales.',
-        });
-        router.push('/login?new=true');
-      } else {
-        throw new Error(result.error || 'No se pudo completar el registro.');
-      }
+      // 1. Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+      const user = userCredential.user;
+
+      // 2. Create user profile in Firestore
+      const userProfile = {
+        fullName: data.fullName,
+        email: data.email,
+      };
+      const userDocRef = doc(firestore, 'users', user.uid);
+      await setDoc(userDocRef, userProfile);
+
+      // 3. Show success and redirect
+      toast({
+        title: '¡Registro Exitoso!',
+        description: 'Ya puedes iniciar sesión con tus credenciales.',
+      });
+      router.push('/login?new=true');
+
     } catch (error: any) {
-      console.error(error);
+      console.error("Signup Error:", error);
+      let errorMessage = 'Ocurrió un error. Por favor, intente de nuevo.';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'El email ingresado ya está en uso.';
+      }
       toast({
         variant: 'destructive',
         title: 'Error de Registro',
-        description: error.message.includes('auth/email-already-in-use')
-          ? 'El email ingresado ya está en uso.'
-          : 'Ocurrió un error. Por favor, intente de nuevo.',
+        description: errorMessage,
       });
     }
   };
