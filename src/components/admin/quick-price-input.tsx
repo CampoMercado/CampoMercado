@@ -47,7 +47,7 @@ export function QuickPriceInput({
   return (
     <div className={cn('flex items-center gap-1', className)}>
       <div className="flex items-center gap-1">
-        {adjustments.map((amount) => (
+        {[...adjustments].reverse().map((amount) => (
           <Button
             key={`minus-${amount}`}
             type="button"

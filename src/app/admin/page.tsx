@@ -35,13 +35,7 @@ import {
 } from '@/components/ui/form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 const newProductSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido.'),
@@ -51,6 +45,8 @@ const newProductSchema = z.object({
 });
 
 type NewProductFormData = z.infer<typeof newProductSchema>;
+
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export default function AdminPage() {
   const [stalls, setStalls] = useState<Stall[]>(mockStalls);
@@ -63,12 +59,21 @@ export default function AdminPage() {
     null
   );
   const { toast } = useToast();
+  const [activeLetter, setActiveLetter] = useState<string | null>(null);
 
   const allProducts = useMemo(() => {
       return stalls.flatMap(stall => 
           stall.products.map(product => ({...product, stallId: stall.id}))
-      );
+      ).sort((a, b) => a.name.localeCompare(b.name));
   }, [stalls]);
+  
+  const filteredProducts = useMemo(() => {
+    if (!activeLetter) {
+      return allProducts;
+    }
+    return allProducts.filter(p => p.name.toUpperCase().startsWith(activeLetter));
+  }, [allProducts, activeLetter]);
+
 
   const newProductForm = useForm<NewProductFormData>({
     resolver: zodResolver(newProductSchema),
@@ -143,8 +148,6 @@ export default function AdminPage() {
   };
 
   const handleAddNewProduct = (data: NewProductFormData) => {
-     // For this mock, we'll add the new product to the first stall.
-     // In a real app, you might have a different logic.
     const targetStallId = stalls[0]?.id;
     if (!targetStallId) {
         toast({ title: 'Error', description: 'No hay puestos para agregar productos.', variant: 'destructive'});
@@ -207,7 +210,27 @@ export default function AdminPage() {
                   <CardTitle>Todos los Productos</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="overflow-x-auto">
+                  <div className="mb-4 flex flex-wrap gap-1">
+                     <Button
+                        variant={activeLetter === null ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setActiveLetter(null)}
+                      >
+                        Todos
+                      </Button>
+                    {alphabet.map((letter) => (
+                      <Button
+                        key={letter}
+                        variant={activeLetter === letter ? 'default' : 'outline'}
+                        size="sm"
+                        className="w-9"
+                        onClick={() => setActiveLetter(letter)}
+                      >
+                        {letter}
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="overflow-x-auto border rounded-lg">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -215,7 +238,7 @@ export default function AdminPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {allProducts.map((product) => (
+                        {filteredProducts.map((product) => (
                           <UpdatePriceRow
                             key={product.id}
                             product={product}
