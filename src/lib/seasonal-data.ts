@@ -1,3 +1,4 @@
+
 export type SeasonalEntry = {
   product: string;
   availability: 'Alta' | 'Media' | 'Baja' | 'Importado';
@@ -9,14 +10,18 @@ export type SeasonalEntry = {
 export const seasonalData: SeasonalEntry[] = [
   // Hortalizas de hoja y tallo
   { product: 'Acelga', availability: 'Alta', season: 'Todo el año, picos en primavera y otoño' },
-  { product: 'Lechuga', availability: 'Alta', season: 'Todo el año, con variedades de estación' },
+  { product: 'Lechuga (Criolla/Mantecosa)', availability: 'Alta', season: 'Todo el año, con variedades de estación' },
   { product: 'Espinaca', availability: 'Alta', season: 'Principalmente otoño e invierno' },
   { product: 'Apio', availability: 'Media', season: 'Otoño e invierno' },
   { product: 'Espárrago', availability: 'Baja', season: 'Cosecha de primavera (Sep-Oct)' },
   
   // Hortalizas de fruto
-  { product: 'Tomate (Redondo/Perita)', availability: 'Alta', season: 'Plena cosecha de Dic a Abr' },
-  { product: 'Pimiento (Morrón)', availability: 'Alta', season: 'Cosecha de verano (Dic a Mar)' },
+  { product: 'Tomate (Redondo)', availability: 'Alta', season: 'Plena cosecha de Dic a Abr' },
+  { product: 'Tomate (Perita)', availability: 'Alta', season: 'Plena cosecha de Dic a Abr' },
+  { product: 'Tomate (Cherry)', availability: 'Media', season: 'Cosecha de verano (Dic a Mar)' },
+  { product: 'Pimiento (Rojo)', availability: 'Alta', season: 'Cosecha de verano (Dic a Mar)' },
+  { product: 'Pimiento (Verde)', availability: 'Alta', season: 'Cosecha de verano (Dic a Mar)' },
+  { product: 'Pimiento (Amarillo)', availability: 'Media', season: 'Cosecha de verano (Dic a Mar)' },
   { product: 'Berenjena', availability: 'Alta', season: 'Verano' },
   { product: 'Zapallo (Anco/Inglés)', availability: 'Alta', season: 'Cosecha de verano y otoño, disponible todo el año' },
   { product: 'Zucchini', availability: 'Alta', season: 'Verano' },
@@ -26,6 +31,7 @@ export const seasonalData: SeasonalEntry[] = [
   // Hortalizas de raíz, bulbo y tubérculo
   { product: 'Ajo', availability: 'Alta', season: 'Cosecha principal de Nov a Ene' },
   { product: 'Cebolla', availability: 'Alta', season: 'Todo el año' },
+  { product: 'Cebolla de Verdeo', availability: 'Alta', season: 'Todo el año' },
   { product: 'Papa', availability: 'Alta', season: 'Todo el año (diferentes variedades)' },
   { product: 'Zanahoria', availability: 'Alta', season: 'Todo el año' },
   { product: 'Remolacha', availability: 'Alta', season: 'Todo el año' },
@@ -44,7 +50,7 @@ export const seasonalData: SeasonalEntry[] = [
   { product: 'Membrillo', availability: 'Alta', season: 'Otoño (Mar-May)' },
 
   // Berries y uvas
-  { product: 'Uva de Mesa', availability: 'Alta', season: 'Cosecha de Ene a Abr' },
+  { product: 'Uva de Mesa (Varias)', availability: 'Alta', season: 'Cosecha de Ene a Abr' },
   { product: 'Frutilla', availability: 'Baja', season: 'Principalmente primavera' },
   { product: 'Frambuesa', availability: 'Baja', season: 'Verano' },
   
