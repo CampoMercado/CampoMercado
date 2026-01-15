@@ -124,10 +124,18 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
             <div className="text-sm font-mono text-success">${marketMax.toLocaleString()}</div>
           </div>
         </TableCell>
-        <TableCell 
-            className="w-[120px] py-3 px-4"
-        >
-          <PriceChart product={product} simple />
+        <TableCell className="py-3 px-4 w-[160px]">
+          <div className="flex items-center gap-2">
+            <span
+              className={cn(
+                'h-2.5 w-2.5 rounded-full bg-success',
+                marketOpen && 'animate-pulse'
+              )}
+            />
+            <div className="text-xs text-muted-foreground">
+              {format(new Date(lastUpdate), 'Pp', { locale: es })}
+            </div>
+          </div>
         </TableCell>
       </TableRow>
 

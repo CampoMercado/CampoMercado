@@ -132,7 +132,7 @@ export default function Home() {
               <TableHead className="text-green-300 px-4 w-[160px]">
                 Mercado
               </TableHead>
-              <TableHead className="w-[120px] py-3 px-4 text-center text-green-300">
+              <TableHead className="w-[200px] py-3 px-4 text-left text-green-300">
                 Actividad
               </TableHead>
             </TableRow>
