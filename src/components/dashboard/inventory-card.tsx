@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-import { InventoryItemWithProduct } from '@/lib/types';
+import { InventoryItem, InventoryItemWithProduct } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import {
   Card,
@@ -42,7 +42,6 @@ import {
   Move,
   DollarSign,
 } from 'lucide-react';
-import { Separator } from '../ui/separator';
 
 import { DeleteInventoryDialog } from './actions/delete-inventory-dialog';
 import { MoveStockDialog } from './actions/move-stock-dialog';
@@ -52,7 +51,7 @@ import { RecordSaleDialog } from './actions/record-sale-dialog';
 type InventoryCardProps = {
   item: InventoryItemWithProduct;
   onDeleteItem: (itemId: string) => void;
-  onMoveStock: (itemId: string, newStatus: string) => void;
+  onSplitStock: (originalItem: InventoryItem, quantityToMove: number, newStatus: string) => void;
   onRecordSale: (itemId: string, quantity: number, salePrice: number, remainingQuantity: number) => void;
 };
 
@@ -85,7 +84,7 @@ const Stat = ({
   </TooltipProvider>
 );
 
-export function InventoryCard({ item, onDeleteItem, onMoveStock, onRecordSale }: InventoryCardProps) {
+export function InventoryCard({ item, onDeleteItem, onSplitStock, onRecordSale }: InventoryCardProps) {
   const { produce, quantity, purchasePrice, purchaseDate, status } = item;
   
   const [isDeleteOpen, setDeleteOpen] = useState(false);
@@ -170,7 +169,7 @@ export function InventoryCard({ item, onDeleteItem, onMoveStock, onRecordSale }:
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setMoveOpen(true)}>
                   <Move className="mr-2" />
-                  Mover Stock
+                  Mover / Dividir Stock
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -238,9 +237,9 @@ export function InventoryCard({ item, onDeleteItem, onMoveStock, onRecordSale }:
       <MoveStockDialog
         isOpen={isMoveOpen}
         onClose={() => setMoveOpen(false)}
-        onConfirm={(newStatus) => onMoveStock(item.id, newStatus)}
-        currentStatus={item.status}
+        onConfirm={(quantityToMove, newStatus) => onSplitStock(item, quantityToMove, newStatus)}
         productName={`${produce.name} (${produce.variety})`}
+        maxQuantity={item.quantity}
       />
 
        <RecordSaleDialog

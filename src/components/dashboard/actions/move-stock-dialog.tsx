@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
   Dialog,
   DialogContent,
@@ -11,27 +13,48 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 type MoveStockDialogProps = {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (newStatus: string) => void;
-  currentStatus: string;
+  onConfirm: (quantityToMove: number, newStatus: string) => void;
   productName: string;
+  maxQuantity: number;
 };
 
 export function MoveStockDialog({
   isOpen,
   onClose,
   onConfirm,
-  currentStatus,
-  productName
+  productName,
+  maxQuantity,
 }: MoveStockDialogProps) {
-  const [newStatus, setNewStatus] = useState(currentStatus);
+  const moveStockSchema = z.object({
+    quantityToMove: z.coerce
+      .number()
+      .positive('La cantidad debe ser positiva.')
+      .max(maxQuantity, `No puedes mover más de ${maxQuantity} cajones.`),
+    newStatus: z.string().min(1, 'La nueva ubicación es requerida.'),
+  });
 
-  const handleConfirm = () => {
-    onConfirm(newStatus);
+  const form = useForm<z.infer<typeof moveStockSchema>>({
+    resolver: zodResolver(moveStockSchema),
+    defaultValues: {
+      quantityToMove: maxQuantity,
+      newStatus: '',
+    },
+  });
+
+  const handleSubmit = (values: z.infer<typeof moveStockSchema>) => {
+    onConfirm(values.quantityToMove, values.newStatus);
     onClose();
   };
 
@@ -41,22 +64,53 @@ export function MoveStockDialog({
         <DialogHeader>
           <DialogTitle>Mover Stock: {productName}</DialogTitle>
           <DialogDescription>
-            Actualiza la ubicación o estado de este lote de inventario.
+            Indica cuántos cajones de un total de {maxQuantity} quieres mover y a qué nueva ubicación o estado.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
-          <Label htmlFor="status">Nueva Ubicación / Estado</Label>
-          <Input
-            id="status"
-            value={newStatus}
-            onChange={(e) => setNewStatus(e.target.value)}
-            placeholder="Ej: Puesto 5, En Tránsito, etc."
-            className="mt-2"
-          />
-        </div>
+        <Form {...form}>
+          <form
+            id="move-stock-form"
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-4 py-4"
+          >
+            <FormField
+              control={form.control}
+              name="quantityToMove"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cantidad a Mover (cajones)</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="newStatus"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nueva Ubicación / Estado</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ej: Puesto 5, En Tránsito, etc."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
         <DialogFooter>
-            <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleConfirm}>Mover Stock</Button>
+          <Button variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" form="move-stock-form">
+            Mover Stock
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

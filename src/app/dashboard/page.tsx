@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { collection, doc, deleteDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { collection, doc, deleteDoc, updateDoc, arrayUnion, writeBatch } from 'firebase/firestore';
 
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { UserProfile, InventoryItem, Produce, Price } from '@/lib/types';
@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { AddInventoryItemDialog } from '@/components/dashboard/add-inventory-item-dialog';
 import { InventoryCard } from '@/components/dashboard/inventory-card';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function DashboardPage() {
   const { user, isUserLoading } = useUser();
@@ -94,15 +95,60 @@ export default function DashboardPage() {
     });
   };
 
-  const handleMoveStock = async (itemId: string, newStatus: string) => {
-     if (!user) return;
-    const itemRef = doc(firestore, `users/${user.uid}/inventory`, itemId);
-    await updateDoc(itemRef, { status: newStatus });
-     toast({
-      title: 'Stock Movido',
-      description: `El lote ha sido movido a "${newStatus}".`,
-    });
-  }
+  const handleSplitStock = async (
+    originalItem: InventoryItem,
+    quantityToMove: number,
+    newStatus: string
+  ) => {
+    if (!user || !inventoryRef) return;
+  
+    const remainingQuantity = originalItem.quantity - quantityToMove;
+  
+    // If moving the full quantity, just update the status
+    if (remainingQuantity <= 0) {
+      const itemRef = doc(firestore, `users/${user.uid}/inventory`, originalItem.id);
+      await updateDoc(itemRef, { status: newStatus });
+      toast({
+        title: 'Stock Movido',
+        description: `Todo el lote ha sido movido a "${newStatus}".`,
+      });
+      return;
+    }
+  
+    // If splitting the stock, update original and create a new one
+    const batch = writeBatch(firestore);
+  
+    // 1. Update the original item
+    const originalItemRef = doc(firestore, `users/${user.uid}/inventory`, originalItem.id);
+    batch.update(originalItemRef, { quantity: remainingQuantity });
+  
+    // 2. Create the new item
+    const newItemRef = doc(inventoryRef); // Auto-generates a new ID
+    const newItemData = {
+      ...originalItem,
+      id: newItemRef.id, // we will lose this ref but it's ok for now
+      quantity: quantityToMove,
+      status: newStatus,
+      sales: [], // New item has no sales history
+    };
+    batch.set(newItemRef, newItemData);
+  
+    try {
+      await batch.commit();
+      toast({
+        title: 'Stock Dividido',
+        description: `${quantityToMove} cajones movidos a "${newStatus}". Quedan ${remainingQuantity} en "${originalItem.status}".`,
+      });
+    } catch (error) {
+      console.error("Error splitting stock: ", error);
+      toast({
+        title: 'Error al dividir',
+        description: 'No se pudo completar la operación. Por favor, inténtelo de nuevo.',
+        variant: 'destructive',
+      });
+    }
+  };
+  
 
   const handleRecordSale = async (itemId: string, quantity: number, salePrice: number, remainingQuantity: number) => {
      if (!user) return;
@@ -160,7 +206,7 @@ export default function DashboardPage() {
                 key={item.id} 
                 item={item} 
                 onDeleteItem={handleDeleteItem}
-                onMoveStock={handleMoveStock}
+                onSplitStock={handleSplitStock}
                 onRecordSale={handleRecordSale}
             />
           ))}
