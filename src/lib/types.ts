@@ -58,6 +58,12 @@ export type UserProfile = {
     email: string;
 }
 
+export type Sale = {
+    quantity: number;
+    salePrice: number;
+    date: string;
+};
+
 export type InventoryItem = {
   id: string;
   produceId: string;
@@ -65,6 +71,7 @@ export type InventoryItem = {
   purchasePrice: number;
   purchaseDate: string;
   status: string;
+  sales?: Sale[];
 }
 
 export type InventoryItemWithProduct = InventoryItem & {
