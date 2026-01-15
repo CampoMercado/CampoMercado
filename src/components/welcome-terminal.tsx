@@ -11,7 +11,7 @@ export function WelcomeTerminal() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
-    }, 3000); // Should be slightly less than the animation total time
+    }, 2500); // Should match animation total time
 
      const progressInterval = setInterval(() => {
       setProgress(prev => {
@@ -21,7 +21,7 @@ export function WelcomeTerminal() {
         }
         return prev + 2;
       });
-    }, 50);
+    }, 50); // 100 / 2 * 50ms = 2500ms = 2.5s
 
     return () => {
         clearTimeout(timer)

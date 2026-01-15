@@ -39,11 +39,11 @@ export default function Home() {
             sessionStorage.setItem('welcomeShown', 'true');
         }
         setAppState('loading');
-    }, 3500); // Duration of welcome animation
+    }, 2500); // Sync with welcome animation
 
     const loadingTimer = setTimeout(() => {
         setAppState('ready');
-    }, 5000); // Duration of skeleton screen
+    }, 7500); // 2.5s (welcome) + 5s (loading)
 
     return () => {
         clearTimeout(welcomeTimer);
@@ -149,7 +149,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-black text-green-400">
+    <div className="flex flex-col min-h-screen bg-black text-green-400 animate-fade-in">
       <Header />
       <PriceTicker products={allProducts} />
       <TopMoversTicker products={aggregatedProducts} />

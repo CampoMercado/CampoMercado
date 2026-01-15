@@ -105,6 +105,10 @@ export default {
           '0%': { transform: 'translateX(100%)' },
           '100%': { transform: 'translateX(0%)' },
         },
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -113,6 +117,7 @@ export default {
         marquee2: 'marquee2 40s linear infinite',
         'marquee-slow': 'marquee 80s linear infinite',
         'marquee2-slow': 'marquee2 80s linear infinite',
+        'fade-in': 'fade-in 1s ease-in-out',
       },
       typography: (theme: (arg0: string) => any) => ({
         DEFAULT: {
