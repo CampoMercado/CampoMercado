@@ -36,6 +36,31 @@ const generateColor = (index: number) => {
   return colors[index % colors.length];
 };
 
+const CustomTooltipComponent = ({ active, payload, label, chartConfig }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="p-2 bg-black/80 border border-green-700 rounded-md shadow-lg text-sm">
+        <p className="label text-green-300 font-bold">{`${format(
+          new Date(label),
+          'PPP',
+          { locale: es }
+        )}`}</p>
+        {payload.map((pld: any) => (
+          <div key={pld.dataKey} style={{ color: pld.color }}>
+            {pld.value
+              ? `${chartConfig[pld.dataKey]?.label}: $${pld.value.toLocaleString()}`
+              : null}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
+
+const CustomTooltip = memo(CustomTooltipComponent);
+
+
 const BrokerChartComponent = ({ products }: { products: Product[] }) => {
   const [selectedProducts, setSelectedProducts] = useState<string[]>(
     products.slice(0, initialVisibleProducts).map((p) => p.id)
@@ -109,28 +134,6 @@ const BrokerChartComponent = ({ products }: { products: Product[] }) => {
     return { chartData: finalChartData, chartConfig: config };
   }, [products, selectedProducts]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="p-2 bg-black/80 border border-green-700 rounded-md shadow-lg text-sm">
-          <p className="label text-green-300 font-bold">{`${format(
-            new Date(label),
-            'PPP',
-            { locale: es }
-          )}`}</p>
-          {payload.map((pld: any) => (
-            <div key={pld.dataKey} style={{ color: pld.color }}>
-              {pld.value
-                ? `${chartConfig[pld.dataKey]?.label}: $${pld.value.toLocaleString()}`
-                : null}
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <div className="lg:col-span-3">
@@ -179,7 +182,7 @@ const BrokerChartComponent = ({ products }: { products: Product[] }) => {
                   domain={['auto', 'auto']}
                 />
                 <Tooltip
-                  content={<CustomTooltip />}
+                  content={<CustomTooltip chartConfig={chartConfig} />}
                   cursor={{
                     stroke: 'hsl(50 100% 60%)',
                     strokeWidth: 1,
