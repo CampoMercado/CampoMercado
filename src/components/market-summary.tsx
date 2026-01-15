@@ -2,7 +2,6 @@
 
 import { useMemo } from 'react';
 import type { Stall, Product } from '@/lib/types';
-import { marketCommentary } from '@/lib/market-commentary';
 import {
   Card,
   CardContent,
@@ -11,44 +10,31 @@ import {
   CardDescription,
 } from './ui/card';
 import {
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  Shield,
   ArrowUp,
   ArrowDown,
-  Package,
-  PackageOpen,
   LineChart,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Separator } from './ui/separator';
 
 type ProductMetric = {
   name: string;
   dailyChange: number;
-  volatility: number;
+  currentPrice: number;
 };
 
 const calculateMetrics = (product: Product): ProductMetric => {
   if (product.priceHistory.length < 2) {
-    return { name: `${product.name} (${product.variety})`, dailyChange: 0, volatility: 0 };
+    return { name: `${product.name} (${product.variety})`, dailyChange: 0, currentPrice: product.priceHistory.at(-1)?.price ?? 0 };
   }
   const currentPrice = product.priceHistory.at(-1)!.price;
   const prevPrice = product.priceHistory.at(-2)!.price;
   const dailyChange = ((currentPrice - prevPrice) / prevPrice) * 100;
 
-  const prices = product.priceHistory.map((h) => h.price);
-  const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
-  const stdDev = Math.sqrt(
-    prices.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) /
-      prices.length
-  );
-  const volatility = mean > 0 ? (stdDev / mean) * 100 : 0;
-
   return {
     name: `${product.name} (${product.variety})`,
     dailyChange,
-    volatility,
+    currentPrice,
   };
 };
 
@@ -79,9 +65,30 @@ const MetricCard = ({
   </Card>
 );
 
+const MoverItem = ({ name, dailyChange, currentPrice }: ProductMetric) => {
+    const isUp = dailyChange > 0;
+    const isDown = dailyChange < 0;
+    const color = isUp ? 'text-success' : isDown ? 'text-danger' : 'text-muted-foreground';
+    const Icon = isUp ? ArrowUp : ArrowDown;
+
+    return (
+        <div className="flex justify-between items-center py-2">
+            <div>
+                <p className="font-medium text-green-300">{name}</p>
+                <p className={cn("flex items-center text-sm font-mono", color)}>
+                    <Icon className="h-4 w-4 mr-1" />
+                    {dailyChange.toFixed(2)}%
+                </p>
+            </div>
+            <p className="text-lg font-mono text-green-200">${currentPrice.toLocaleString()}</p>
+        </div>
+    );
+};
+
+
 export function MarketSummary({ stalls }: { stalls: Stall[] }) {
   const marketMetrics = useMemo(() => {
-    const allProducts = stalls.flatMap((stall) => stall.products);
+    const allProducts = stalls.flatMap((stall) => stall.products).filter(p => p.priceHistory.length > 1);
     if (allProducts.length === 0) return null;
 
     const metrics = allProducts.map(calculateMetrics);
@@ -89,19 +96,13 @@ export function MarketSummary({ stalls }: { stalls: Stall[] }) {
     const marketTrend = metrics.reduce((sum, p) => sum + p.dailyChange, 0) / metrics.length;
     
     const sortedByChange = [...metrics].sort((a, b) => b.dailyChange - a.dailyChange);
-    const topGainer = sortedByChange[0];
-    const topLoser = sortedByChange[sortedByChange.length - 1];
-
-    const sortedByVolatility = [...metrics].sort((a, b) => b.volatility - a.volatility);
-    const mostVolatile = sortedByVolatility[0];
-    const mostStable = sortedByVolatility[sortedByVolatility.length - 1];
+    const topGainers = sortedByChange.filter(p => p.dailyChange > 0).slice(0, 3);
+    const topLosers = sortedByChange.filter(p => p.dailyChange < 0).slice(-3).reverse();
 
     return {
         marketTrend,
-        topGainer,
-        topLoser,
-        mostVolatile,
-        mostStable,
+        topGainers,
+        topLosers,
     }
   }, [stalls]);
 
@@ -109,67 +110,57 @@ export function MarketSummary({ stalls }: { stalls: Stall[] }) {
     return <p className="text-muted-foreground">No hay datos de mercado para analizar.</p>;
   }
 
-  const { marketTrend, topGainer, topLoser, mostVolatile, mostStable } = marketMetrics;
+  const { marketTrend, topGainers, topLosers } = marketMetrics;
 
   const isMarketUp = marketTrend > 0;
-  const TrendIcon = isMarketUp ? ArrowUp : ArrowDown;
   const trendColor = isMarketUp ? 'text-success' : 'text-danger';
 
   return (
     <div className="space-y-8">
-      <h2 className="text-3xl font-headline text-green-300 pb-2 mb-6">
-        Resumen del Mercado
-      </h2>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard 
-            icon={<LineChart className="h-4 w-4 text-green-500"/>}
-            title="Tendencia General"
-            value={`${marketTrend.toFixed(2)}%`}
-            description="Cambio promedio de todos los productos"
-            valueClass={trendColor}
-        />
-        <MetricCard 
-            icon={<TrendingUp className="h-4 w-4 text-success"/>}
-            title="Mejor Rendimiento (24h)"
-            value={`${topGainer.dailyChange.toFixed(2)}%`}
-            description={topGainer.name}
-            valueClass="text-success"
-        />
-        <MetricCard 
-            icon={<TrendingDown className="h-4 w-4 text-danger"/>}
-            title="Peor Rendimiento (24h)"
-            value={`${topLoser.dailyChange.toFixed(2)}%`}
-            description={topLoser.name}
-            valueClass="text-danger"
-        />
-        <MetricCard 
-            icon={<Activity className="h-4 w-4 text-accent"/>}
-            title="Más Volátil"
-            value={`${mostVolatile.volatility.toFixed(2)}%`}
-            description={mostVolatile.name}
-            valueClass="text-accent"
-        />
-         <MetricCard 
-            icon={<Shield className="h-4 w-4 text-blue-400"/>}
-            title="Más Estable"
-            value={`${mostStable.volatility.toFixed(2)}%`}
-            description={mostStable.name}
-            valueClass="text-blue-400"
-        />
-        <MetricCard 
-            icon={<Package className="h-4 w-4 text-gray-400"/>}
-            title="Más Vendidos (Semanal)"
-            value={marketCommentary.mostSold[0]}
-            description={marketCommentary.mostSold.slice(1).join(', ')}
-            valueClass="text-base"
-        />
-         <MetricCard 
-            icon={<PackageOpen className="h-4 w-4 text-gray-500"/>}
-            title="Menos Vendidos (Semanal)"
-            value={marketCommentary.leastSold[0]}
-            description={marketCommentary.leastSold.slice(1).join(', ')}
-            valueClass="text-base"
-        />
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <h2 className="text-3xl font-headline text-green-300">
+                Resumen del Mercado
+            </h2>
+             <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">Tendencia General:</span>
+                <span className={cn("font-bold font-mono flex items-center", trendColor)}>
+                    {isMarketUp ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                    {marketTrend.toFixed(2)}%
+                </span>
+            </div>
+        </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <Card className="bg-black/30 border-green-800/50">
+            <CardHeader>
+                <CardTitle className="text-xl font-headline text-success flex items-center gap-2">
+                    <ArrowUp />
+                    Protagonistas del Día
+                </CardTitle>
+                 <CardDescription className="text-green-500/80">Productos con mayor alza en 24h.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="divide-y divide-green-900/50">
+                    {topGainers.length > 0 ? topGainers.map(p => <MoverItem key={p.name} {...p}/>)
+                     : <p className="text-muted-foreground text-sm py-4">No se registraron alzas significativas.</p>}
+                </div>
+            </CardContent>
+        </Card>
+        <Card className="bg-black/30 border-red-800/50">
+            <CardHeader>
+                <CardTitle className="text-xl font-headline text-danger flex items-center gap-2">
+                    <ArrowDown />
+                    Bajas Relevantes
+                </CardTitle>
+                <CardDescription className="text-red-500/80">Productos con mayor baja en 24h.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="divide-y divide-red-900/50">
+                    {topLosers.length > 0 ? topLosers.map(p => <MoverItem key={p.name} {...p}/>)
+                     : <p className="text-muted-foreground text-sm py-4">No se registraron bajas significativas.</p>}
+                </div>
+            </CardContent>
+        </Card>
       </div>
     </div>
   );
