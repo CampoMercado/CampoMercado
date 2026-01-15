@@ -40,6 +40,12 @@ export default function Home() {
   const [highlightedProductId, setHighlightedProductId] = useState<string | null>(
     null
   );
+  const [year, setYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
 
   useEffect(() => {
     // Simplified loading state management
@@ -200,8 +206,7 @@ export default function Home() {
       </main>
 
       <footer className="container py-6 text-center text-green-600/50 text-xs">
-        © {new Date().getFullYear()} CAMPO MERCADO. TODOS LOS DERECHOS
-        RESERVADOS.
+        {year && `© ${year} CAMPO MERCADO. TODOS LOS DERECHOS RESERVADOS.`}
       </footer>
     </div>
   );

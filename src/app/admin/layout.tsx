@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter }from 'next/navigation';
 import { useUser } from '@/firebase';
 import { Header } from '@/components/header';
@@ -13,6 +13,11 @@ export default function AdminLayout({
 }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
+  const [year, setYear] = useState<number | null>(null);
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -39,7 +44,7 @@ export default function AdminLayout({
         {children}
       </main>
       <footer className="container py-6 text-center text-muted-foreground text-sm">
-        © {new Date().getFullYear()} Campo Mercado.
+        {year && `© ${year} Campo Mercado.`}
       </footer>
     </div>
   );

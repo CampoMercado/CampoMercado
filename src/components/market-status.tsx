@@ -69,15 +69,20 @@ export function MarketStatus({ onStatusChange }: MarketStatusProps) {
         countdown,
       });
     };
-
+    
+    // Run once on client mount to avoid hydration mismatch
     updateStatus();
-    const interval = setInterval(updateStatus, 1000);
 
+    const interval = setInterval(updateStatus, 1000);
     return () => clearInterval(interval);
   }, [onStatusChange]);
 
   if (!status) {
-    return null; // Or a loading skeleton
+    return (
+       <div className="flex items-center gap-4 font-mono text-sm h-[20px] w-[275px]">
+         {/* Skeleton or placeholder to prevent layout shift */}
+       </div>
+    );
   }
 
   const { isOpen, label, countdown } = status;
