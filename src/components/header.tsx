@@ -26,12 +26,13 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-green-800 bg-black/80 backdrop-blur">
       <div className="container flex h-16 items-center">
         <div className="mr-4 flex items-center">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
+          <Link href="/" className="mr-6 flex items-baseline space-x-2">
             <span className="font-bold font-headline text-xl text-green-300 flex items-center gap-2">
               <span>Campo</span>
               <ArrowRight className="h-5 w-5 text-primary" />
               <span>Mercado</span>
             </span>
+            <span className="font-mono text-xs text-muted-foreground">v0.0.0.4</span>
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">

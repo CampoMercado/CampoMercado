@@ -34,9 +34,6 @@ export default function RootLayout({
             {children}
           <Toaster />
         </FirebaseClientProvider>
-        <div className="fixed top-2 right-4 z-[200] text-xs text-muted-foreground font-mono">
-          v0.0.0.4
-        </div>
       </body>
     </html>
   );
