@@ -79,9 +79,18 @@
         "purchasePrice": {
           "type": "number",
           "description": "Price per crate at which the item was purchased."
+        },
+        "purchaseDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 string of when the item was purchased."
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status or location of the inventory item (e.g., En Reserva, Puesto 5)."
         }
       },
-      "required": ["produceId", "quantity", "purchasePrice"]
+      "required": ["produceId", "quantity", "purchasePrice", "purchaseDate", "status"]
     }
   },
   "auth": {

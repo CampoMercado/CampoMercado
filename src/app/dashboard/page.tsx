@@ -1,23 +1,25 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import type { UserProfile, InventoryItem, Produce, AggregatedProduct } from '@/lib/types';
+import type { UserProfile, InventoryItem, Produce, Price } from '@/lib/types';
 import { collection, doc } from 'firebase/firestore';
 import { useDoc } from '@/firebase/firestore/use-doc';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableHeader, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { PlusCircle } from 'lucide-react';
 
+import { AddInventoryItemDialog } from '@/components/dashboard/add-inventory-item-dialog';
+import { InventoryCard } from '@/components/dashboard/inventory-card';
+import { LoadingSkeleton } from '@/components/loading-skeleton';
+
 export default function DashboardPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
   const userProfileRef = useMemoFirebase(
     () => (user ? doc(firestore, 'users', user.uid) : null),
     [firestore, user]
   );
-  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile, isLoading: isLoadingProfile } = useDoc<UserProfile>(userProfileRef);
 
   const inventoryRef = useMemoFirebase(
     () => (user ? collection(firestore, `users/${user.uid}/inventory`) : null),
@@ -27,7 +29,46 @@ export default function DashboardPage() {
 
   const producesRef = useMemoFirebase(() => user ? collection(firestore, 'produces') : null, [firestore, user]);
   const { data: produces, isLoading: isLoadingProduces } = useCollection<Produce>(producesRef);
+  
+  const pricesRef = useMemoFirebase(() => user ? collection(firestore, 'prices') : null, [firestore, user]);
+  const { data: prices, isLoading: isLoadingPrices } = useCollection<Price>(pricesRef);
 
+  const aggregatedProducts = useMemo(() => {
+    if (!produces || !prices) return [];
+    
+    const pricesByProduceId = prices.reduce((acc, price) => {
+      if (!acc[price.produceId]) {
+        acc[price.produceId] = [];
+      }
+      acc[price.produceId].push({ date: price.date, price: price.price });
+      return acc;
+    }, {} as Record<string, { date: string; price: number }[]>);
+
+    return produces.map((produce) => ({
+      ...produce,
+      priceHistory: (pricesByProduceId[produce.id] || []).sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      ),
+    }));
+  }, [produces, prices]);
+  
+
+  const inventoryWithData = useMemo(() => {
+    if (!inventory || !aggregatedProducts) return [];
+    return inventory.map(item => {
+      const produceInfo = aggregatedProducts.find(p => p.id === item.produceId);
+      return {
+        ...item,
+        produce: produceInfo,
+      };
+    }).sort((a,b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime());
+  }, [inventory, aggregatedProducts]);
+
+  const isLoading = isUserLoading || isLoadingProfile || isLoadingInventory || isLoadingProduces || isLoadingPrices;
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
 
   if (!userProfile) {
     return (
@@ -37,69 +78,38 @@ export default function DashboardPage() {
     );
   }
 
-  // Once we implement adding items, we will build this table out.
-  const inventoryWithData = inventory?.map(item => {
-    const produceInfo = produces?.find(p => p.id === item.produceId);
-    return {
-      ...item,
-      name: produceInfo?.name || 'Desconocido',
-      variety: produceInfo?.variety || '',
-    }
-  });
-
-  const isLoading = isLoadingInventory || isLoadingProduces;
-
   return (
     <div>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Mi Inventario</CardTitle>
-          <Button>
-            <PlusCircle className="mr-2" />
-            Registrar Compra
-          </Button>
-        </CardHeader>
-        <CardContent>
-           <div className="overflow-x-auto border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Producto</TableHead>
-                  <TableHead>Stock (Cajones)</TableHead>
-                  <TableHead>Precio de Compra</TableHead>
-                  <TableHead>Valor de Stock</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      Cargando inventario...
-                    </TableCell>
-                  </TableRow>
-                ) : inventoryWithData && inventoryWithData.length > 0 ? (
-                  inventoryWithData.map(item => (
-                     <TableRow key={item.id}>
-                        <TableCell>{item.name} ({item.variety})</TableCell>
-                        <TableCell>{item.quantity}</TableCell>
-                        <TableCell>${item.purchasePrice.toLocaleString()}</TableCell>
-                        <TableCell>${(item.quantity * item.purchasePrice).toLocaleString()}</TableCell>
-                        <TableCell>{/* Actions here */}</TableCell>
-                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
-                      Aún no tienes items en tu inventario. ¡Registra tu primera compra!
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-           </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+           <h1 className="text-4xl font-headline font-bold">
+            Mi Inventario
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Gestiona tus compras, ventas y stock en tiempo real.
+          </p>
+        </div>
+        <AddInventoryItemDialog products={aggregatedProducts} />
+      </div>
+
+      {inventoryWithData && inventoryWithData.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {inventoryWithData.map(item => (
+             <InventoryCard key={item.id} item={item} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16 border-2 border-dashed border-muted rounded-lg">
+            <h3 className="text-xl font-semibold">Tu inventario está vacío</h3>
+            <p className="text-muted-foreground mt-2 mb-6">
+                Comienza por registrar tu primera compra de mercadería.
+            </p>
+            <AddInventoryItemDialog products={aggregatedProducts} buttonVariant='default'>
+                <PlusCircle className="mr-2" />
+                Registrar Primera Compra
+            </AddInventoryItemDialog>
+        </div>
+      )}
     </div>
   );
 }

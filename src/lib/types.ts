@@ -1,5 +1,6 @@
 
 
+
 export type PriceHistory = {
   date: string;
   price: number;
@@ -62,4 +63,10 @@ export type InventoryItem = {
   produceId: string;
   quantity: number;
   purchasePrice: number;
+  purchaseDate: string;
+  status: string;
+}
+
+export type InventoryItemWithProduct = InventoryItem & {
+  produce?: AggregatedProduct;
 }
