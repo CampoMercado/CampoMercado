@@ -92,17 +92,17 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
             "text-right py-3 px-4 transition-all duration-500",
              isHighlighted && "border-y-2 border-accent/80 bg-accent/10"
             )}>
-          <span className="text-lg md:text-xl font-mono text-green-200">
+          <span className="text-xl font-mono text-green-200">
             ${currentPrice.toLocaleString()}
           </span>
-           <div className="text-xs text-muted-foreground mt-1 text-right hidden sm:block">
+           <div className="text-xs text-muted-foreground mt-1 text-right">
               {lastUpdateLabel}
             </div>
         </TableCell>
-        <TableCell className="text-right py-3 px-4 w-[80px] sm:w-[100px]">
+        <TableCell className="text-right py-3 px-4 w-[100px]">
           <ChangeIndicator value={changePercent} label="Var."/>
         </TableCell>
-        <TableCell className="py-3 px-4 w-[160px] hidden md:table-cell">
+        <TableCell className="py-3 px-4 w-[160px]">
            <div className="flex items-center justify-between">
              <div className="text-xs text-muted-foreground">
                 {prevPriceData ? format(new Date(prevPriceData.date), "d MMM", { locale: es }) : 'Precio Ant.'}:
@@ -114,7 +114,7 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
             <div className="text-sm font-mono text-accent">{volatility.toFixed(1)}%</div>
           </div>
         </TableCell>
-         <TableCell className="py-3 px-4 w-[160px] hidden lg:table-cell">
+         <TableCell className="py-3 px-4 w-[160px]">
           <div className="flex items-center justify-between">
             <div className="text-xs text-muted-foreground">Mín. Mercado:</div>
             <div className="text-sm font-mono text-danger">${marketMin.toLocaleString()}</div>
@@ -125,20 +125,9 @@ export function ProductCard({ product, marketProducts, marketOpen, isHighlighted
           </div>
         </TableCell>
         <TableCell 
-            className="w-[120px] hidden sm:table-cell py-3 px-4"
+            className="w-[120px] py-3 px-4"
         >
-           <div className="flex items-center gap-2 justify-center">
-              <span className={cn(
-                  'h-2 w-2 rounded-full bg-success',
-                  marketOpen && 'animate-pulse'
-              )}></span>
-              <div className="text-xs text-muted-foreground">
-                {format(new Date(lastUpdate), 'HH:mm')}
-              </div>
-           </div>
-           <div className="text-xs text-muted-foreground mt-1 text-center sm:hidden">
-              {lastUpdateLabel}
-            </div>
+          <PriceChart product={product} simple />
         </TableCell>
       </TableRow>
 

@@ -140,7 +140,7 @@ const BrokerChartComponent = ({ products }: { products: AggregatedProduct[] }) =
       <div className="lg:col-span-3">
         <Card className="bg-black/50 border-green-800/50">
           <CardHeader>
-            <CardTitle className="text-xl md:text-2xl font-headline text-green-200">
+            <CardTitle className="text-2xl font-headline text-green-200">
               Gráfico de Mercado Comparativo
             </CardTitle>
           </CardHeader>
@@ -223,7 +223,7 @@ const BrokerChartComponent = ({ products }: { products: AggregatedProduct[] }) =
             <p className="text-xs text-muted-foreground mb-4">
               Puedes comparar hasta {MAX_VISIBLE_PRODUCTS} productos.
             </p>
-            <ScrollArea className="h-[250px] lg:h-[400px] pr-4">
+            <ScrollArea className="h-96 pr-4">
               <div className="space-y-3">
                 {products.map((product) => (
                   <div

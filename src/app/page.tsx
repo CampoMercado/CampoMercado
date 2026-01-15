@@ -101,7 +101,7 @@ export default function Home() {
       variant="ghost"
       onClick={() => setActiveView(view)}
       className={cn(
-        'text-green-400 hover:bg-green-900 hover:text-green-200 text-xs md:text-sm px-2 md:px-4',
+        'text-green-400 hover:bg-green-900 hover:text-green-200',
         activeView === view && 'bg-green-800/80 text-green-100'
       )}
     >
@@ -123,16 +123,16 @@ export default function Home() {
               <TableHead className="text-right text-green-300 px-4">
                 Último Precio
               </TableHead>
-              <TableHead className="text-right text-green-300 px-4 w-[80px] sm:w-[100px]">
+              <TableHead className="text-right text-green-300 px-4 w-[100px]">
                 Var.
               </TableHead>
-              <TableHead className="text-green-300 px-4 w-[160px] hidden md:table-cell">
+              <TableHead className="text-green-300 px-4 w-[160px]">
                 Análisis
               </TableHead>
-              <TableHead className="text-green-300 px-4 w-[160px] hidden lg:table-cell">
+              <TableHead className="text-green-300 px-4 w-[160px]">
                 Mercado
               </TableHead>
-              <TableHead className="w-[120px] hidden sm:table-cell py-3 px-4 text-center text-green-300">
+              <TableHead className="w-[120px] py-3 px-4 text-center text-green-300">
                 Actividad
               </TableHead>
             </TableRow>
@@ -165,22 +165,22 @@ export default function Home() {
       <PriceTicker products={aggregatedProducts} />
       <TopMoversTicker products={aggregatedProducts} />
 
-      <main className="flex-grow container py-6 md:py-8 space-y-8">
+      <main className="flex-grow container py-8 space-y-8">
         <div>
           <div className="mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <h1 className="text-2xl md:text-4xl lg:text-6xl font-headline tracking-widest text-green-300">
+            <div className="flex items-center justify-between">
+              <h1 className="text-6xl font-headline tracking-widest text-green-300">
                 MERCADO DIARIO
               </h1>
               <MarketStatus onStatusChange={setMarketOpen} />
             </div>
-            <p className="text-green-500 mt-2 text-xs md:text-sm tracking-wider">
+            <p className="text-green-500 mt-2 tracking-wider">
               MERCADO COOPERATIVO DE GUYAMALLÉN
             </p>
           </div>
 
           <div className="border-b border-green-800/50 mb-6">
-            <div className="flex items-center space-x-0 md:space-x-1 flex-wrap">
+            <div className="flex items-center space-x-1">
               <TabButton view="prices">Precios</TabButton>
               <TabButton view="chart">Gráfico</TabButton>
               <TabButton view="summary">Resumen</TabButton>

@@ -37,10 +37,10 @@ export function UpdatePriceRow({
     return (
       <>
         <TableHead>Producto</TableHead>
-        <TableHead className="hidden sm:table-cell">Precio Actual</TableHead>
-        <TableHead className="hidden md:table-cell">Última Act.</TableHead>
+        <TableHead>Precio Actual</TableHead>
+        <TableHead>Última Act.</TableHead>
         <TableHead>Nuevo Precio</TableHead>
-        <TableHead className="w-auto text-right pr-2">Acciones</TableHead>
+        <TableHead className="w-[150px] text-right pr-2">Acciones</TableHead>
       </>
     );
   }
@@ -55,8 +55,8 @@ export function UpdatePriceRow({
         <div>{product.name}</div>
         <div className="text-xs text-muted-foreground">{product.variety}</div>
       </TableCell>
-      <TableCell className="hidden sm:table-cell font-mono">${lastPriceEntry?.price.toLocaleString() ?? 'N/A'}</TableCell>
-      <TableCell className='hidden md:table-cell'>
+      <TableCell className="font-mono">${lastPriceEntry?.price.toLocaleString() ?? 'N/A'}</TableCell>
+      <TableCell>
         {lastPriceEntry
           ? format(new Date(lastPriceEntry.date), 'P', { locale: es })
           : 'N/A'}
@@ -74,14 +74,13 @@ export function UpdatePriceRow({
             onClick={handleSubmit}
             disabled={isUpdating || newPrice === currentPrice}
             size="sm"
-            className="w-24"
           >
             {isUpdating ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <>
-                <Save className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Actualizar</span>
+                <Save className="h-4 w-4 mr-2" />
+                Actualizar
               </>
             )}
           </Button>

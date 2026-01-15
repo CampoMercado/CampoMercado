@@ -45,7 +45,7 @@ export function QuickPriceInput({
   };
 
   return (
-    <div className={cn('flex items-center gap-1 flex-wrap', className)}>
+    <div className={cn('flex items-center gap-1', className)}>
       <div className="flex items-center gap-1">
         {[...adjustments].reverse().map((amount) => (
           <Button
@@ -53,7 +53,7 @@ export function QuickPriceInput({
             type="button"
             variant="outline"
             size="icon"
-            className="h-8 w-8 text-danger shrink-0"
+            className="h-8 w-8 text-danger"
             onClick={() => handleAdjust(-amount)}
           >
             <Minus className="h-4 w-4" />
@@ -62,7 +62,7 @@ export function QuickPriceInput({
         ))}
       </div>
 
-      <div className="relative w-28 flex-shrink-0">
+      <div className="relative w-28">
         <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
           $
         </span>
@@ -81,7 +81,7 @@ export function QuickPriceInput({
             type="button"
             variant="outline"
             size="icon"
-            className="h-8 w-8 text-success shrink-0"
+            className="h-8 w-8 text-success"
             onClick={() => handleAdjust(amount)}
           >
             <Plus className="h-4 w-4" />

@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase';
+import { DesktopOnlyView } from '@/components/desktop-only-view';
 
 export const metadata: Metadata = {
   title: 'Campo Mercado',
@@ -31,7 +32,9 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased bg-black')}>
         <FirebaseClientProvider>
-          {children}
+          <DesktopOnlyView>
+            {children}
+          </DesktopOnlyView>
           <Toaster />
         </FirebaseClientProvider>
       </body>

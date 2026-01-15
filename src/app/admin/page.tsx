@@ -222,12 +222,11 @@ export default function AdminPage() {
               <CardTitle>Todos los Productos</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="mb-4 flex flex-wrap gap-1">
+              <div className="mb-4 flex flex-wrap gap-2">
                 <Button
                   variant={activeLetter === null ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setActiveLetter(null)}
-                  className='px-3'
                 >
                   Todos
                 </Button>
@@ -275,7 +274,7 @@ export default function AdminPage() {
           </Card>
         </TabsContent>
         <TabsContent value="add">
-          <Card className="max-w-2xl">
+          <Card className="max-w-lg">
             <CardHeader>
               <CardTitle>Agregar Nuevo Producto al Mercado</CardTitle>
             </CardHeader>
