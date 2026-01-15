@@ -18,13 +18,10 @@ export function LoadingSkeleton() {
         </div>
       </header>
 
-      {/* Skeleton Tickers */}
-      <div className="border-y border-green-800 py-2">
-        <Skeleton className="h-5 w-full bg-muted" />
-      </div>
-      <div className="border-b border-green-800 py-1">
-        <Skeleton className="h-4 w-full bg-muted" />
-      </div>
+      {/* Skeleton Tickers - REMOVED */}
+      <div className="h-7 py-2"></div>
+      <div className="h-6 py-1"></div>
+
 
       <main className="flex-grow container py-8 space-y-8">
         <div>
@@ -33,7 +30,7 @@ export function LoadingSkeleton() {
             <Skeleton className="h-5 w-1/2 mt-2 bg-muted" />
           </div>
 
-          <div className="border-b border-green-800/50 mb-6">
+          <div className="mb-6">
             <div className="flex items-center space-x-2">
               <Skeleton className="h-10 w-24 bg-muted" />
               <Skeleton className="h-10 w-36 bg-muted" />

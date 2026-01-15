@@ -2,16 +2,31 @@
 
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
 
 export function WelcomeTerminal() {
   const [visible, setVisible] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
     }, 3000); // Should be slightly less than the animation total time
 
-    return () => clearTimeout(timer);
+     const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 50);
+
+    return () => {
+        clearTimeout(timer)
+        clearInterval(progressInterval)
+    };
   }, []);
 
   return (
@@ -22,9 +37,7 @@ export function WelcomeTerminal() {
       )}
     >
       <div className="w-full max-w-md p-4 text-center">
-        <p className="overflow-hidden whitespace-nowrap border-r-4 border-r-primary text-2xl lg:text-3xl animate-typing">
-          CONNECTING TO CUYOCROPS TERMINAL...
-        </p>
+        <Progress value={progress} className="h-1 bg-primary/20 [&>div]:bg-primary" />
       </div>
     </div>
   );
