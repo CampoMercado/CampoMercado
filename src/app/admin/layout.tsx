@@ -7,7 +7,7 @@ import { Header } from '@/components/header';
 import { LoadingSkeleton } from '@/components/loading-skeleton';
 
 // This is a simplified check. For a real app, you'd use custom claims.
-const ADMIN_EMAILS = ['ignacioenriquearra@campo-mercado.com'];
+const ADMIN_EMAILS = ['ignacioenriquearra@campo-mercado.com', 'admin@example.com'];
 
 export default function AdminLayout({
   children,
