@@ -1,3 +1,4 @@
+
 export type PriceHistory = {
   date: string;
   price: number;
@@ -74,7 +75,7 @@ export type InventoryItem = {
   purchasePrice: number;
   purchaseDate: string;
   status: string;
-  sales?: Sale[];
+  sales: Sale[];
   associatedCosts?: AssociatedCost[];
 }
 

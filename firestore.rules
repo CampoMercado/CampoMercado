@@ -23,6 +23,11 @@ service cloud.firestore {
       match /costs/{costId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+
+      // Protect user-defined expenses: only the user can manage them
+      match /expenses/{expenseId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     match /produces/{produceId} {

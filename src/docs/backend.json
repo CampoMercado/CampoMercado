@@ -93,14 +93,7 @@
             "type": "array",
             "description": "A list of sales made from this specific inventory lot.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "quantity": { "type": "number" },
-                    "salePrice": { "type": "number" },
-                    "date": { "type": "string", "format": "date-time" },
-                    "status": { "type": "string", "enum": ["Pagado", "Pendiente"]}
-                },
-                "required": ["quantity", "salePrice", "date", "status"]
+                "$ref": "#/entities/Sale"
             }
         },
         "associatedCosts": {
@@ -118,6 +111,18 @@
       },
       "required": ["produceId", "quantity", "purchasePrice", "purchaseDate", "status"]
     },
+    "Sale": {
+        "title": "Sale",
+        "description": "Represents a single sale transaction from an inventory lot.",
+        "type": "object",
+        "properties": {
+            "quantity": { "type": "number", "description": "Number of crates sold." },
+            "salePrice": { "type": "number", "description": "Price per crate for this sale." },
+            "date": { "type": "string", "format": "date-time", "description": "ISO 8601 string of when the sale occurred." },
+            "status": { "type": "string", "enum": ["Pagado", "Pendiente"], "description": "Status of the payment for this sale."}
+        },
+        "required": ["quantity", "salePrice", "date", "status"]
+    },
     "Cost": {
       "title": "Cost",
       "description": "Represents a reusable, user-defined cost per crate.",
@@ -133,9 +138,9 @@
         "description": "Represents a general business expense, not tied to a specific crate.",
         "type": "object",
         "properties": {
-            "description": { "type": "string" },
-            "amount": { "type": "number" },
-            "date": { "type": "string", "format": "date-time" }
+            "description": { "type": "string", "description": "Description of the expense." },
+            "amount": { "type": "number", "description": "Total amount of the expense." },
+            "date": { "type": "string", "format": "date-time", "description": "Date the expense was incurred." }
         },
         "required": ["description", "amount", "date"]
     }
