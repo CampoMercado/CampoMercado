@@ -21,7 +21,7 @@ service cloud.firestore {
       
       // Protect user-defined costs: only the user can manage them
       match /costs/{costId} {
-        allow read, write: if request.auth != null && request.auth.uid == userId;
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
       }
 
       // Protect user-defined expenses: only the user can manage them
