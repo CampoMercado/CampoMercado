@@ -5,6 +5,9 @@ import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebas
 import type { Produce, Price, AggregatedProduct, UserProfile } from '@/lib/types';
 import { collection, doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Smartphone } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 
 import { Header } from '@/components/header';
 import { PriceTicker, TopMoversTicker, PricePerKgTicker } from '@/components/price-ticker';
@@ -31,6 +34,7 @@ export default function Home() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const firestore = useFirestore();
+  const isMobile = useIsMobile();
 
   const producesRef = useMemoFirebase(() => user ? collection(firestore, 'produces') : null, [firestore, user]);
   const pricesRef = useMemoFirebase(() => user ? collection(firestore, 'prices') : null, [firestore, user]);
@@ -169,6 +173,36 @@ export default function Home() {
   );
   
   const isLoading = isUserLoading || isLoadingProduces || isLoadingPrices;
+
+  const MobileLanding = () => (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow container flex flex-col items-center justify-center text-center">
+        <Smartphone className="h-16 w-16 text-primary mb-6" />
+        <h1 className="text-3xl font-headline font-bold text-foreground">
+          Experiencia de Escritorio
+        </h1>
+        <p className="text-muted-foreground mt-2 max-w-md">
+          La vista principal de Campo Mercado está optimizada para pantallas más grandes. Por favor, visita desde una computadora para un análisis completo del mercado.
+        </p>
+        <div className="mt-8 border-t border-border pt-8 w-full max-w-md">
+           <p className="text-sm text-muted-foreground mb-4">¿Eres un informante de precios?</p>
+            <Button asChild size="lg">
+              <Link href="/mobile">
+                Acceso para Informantes
+              </Link>
+            </Button>
+        </div>
+      </main>
+      <footer className="container py-6 text-center text-muted-foreground text-sm">
+        {`© ${year} CAMPO MERCADO.`}
+      </footer>
+    </div>
+  );
+
+  if (isMobile) {
+    return <MobileLanding />;
+  }
 
   if (appState !== 'ready' || isLoading || !user) {
     return <LoadingSkeleton />;
