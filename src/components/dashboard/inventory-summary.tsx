@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import {
   InventoryItemWithProduct,
   InventorySummaryData,
-  Sale,
+  RecentSale,
 } from '@/lib/types';
 import {
   Card,
@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowDown, ArrowUp, TrendingUp, Banknote, Package, Landmark, Scale, FileClock, HandCoins, PiggyBank, CircleDollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Separator } from '../ui/separator';
+import { Button } from '../ui/button';
 
 const SummaryStat = ({
   title,
@@ -58,8 +59,10 @@ const SummaryStat = ({
 
 export function InventorySummary({
   inventory,
+  onUpdateSaleStatus,
 }: {
   inventory: InventoryItemWithProduct[];
+  onUpdateSaleStatus: (inventoryItemId: string, saleId: string) => Promise<void>;
 }) {
   const summary = useMemo((): InventorySummaryData | null => {
     if (!inventory || inventory.length === 0) {
@@ -73,7 +76,7 @@ export function InventorySummary({
     let costOfGoodsSold = 0;
     
     const stockByLocation: { [key: string]: { quantity: number; value: number } } = {};
-    const recentSales: (Sale & { productName: string })[] = [];
+    const recentSales: RecentSale[] = [];
 
     inventory.forEach((item) => {
       if (!item.produce) return;
@@ -110,6 +113,7 @@ export function InventorySummary({
             recentSales.push({
                 ...sale,
                 productName: `${item.produce?.name} (${item.produce?.variety})`,
+                inventoryItemId: item.id,
             });
         });
       }
@@ -277,12 +281,12 @@ export function InventorySummary({
                                 <TableRow>
                                     <TableHead>Producto</TableHead>
                                     <TableHead className="text-right">Monto</TableHead>
-                                    <TableHead className="text-right">Estado</TableHead>
+                                    <TableHead className="text-right w-[180px]">Acción / Estado</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {recentSales.map((sale, index) => (
-                                    <TableRow key={`${sale.date}-${index}`}>
+                                {recentSales.map((sale) => (
+                                    <TableRow key={sale.id}>
                                         <TableCell>
                                             <div className="font-medium">{sale.productName}</div>
                                             <div className="text-xs text-muted-foreground">
@@ -293,10 +297,21 @@ export function InventorySummary({
                                             +${(sale.quantity * sale.salePrice).toLocaleString()}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Badge variant={sale.status === 'Pagado' ? 'default' : 'secondary'}
-                                                className={cn(sale.status === 'Pagado' && 'bg-success/80 text-success-foreground', sale.status === 'Pendiente' && 'bg-amber-600/80 text-amber-50')}>
-                                                {sale.status}
-                                            </Badge>
+                                            {sale.status === 'Pendiente' ? (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => onUpdateSaleStatus(sale.inventoryItemId, sale.id)}
+                                                    className="h-8 text-xs"
+                                                >
+                                                    Marcar como Pagado
+                                                </Button>
+                                            ) : (
+                                                <Badge variant={'default'}
+                                                    className={cn('bg-success/80 text-success-foreground')}>
+                                                    {sale.status}
+                                                </Badge>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))}

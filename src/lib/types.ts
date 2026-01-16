@@ -57,6 +57,7 @@ export type UserProfile = {
 }
 
 export type Sale = {
+    id: string;
     quantity: number;
     salePrice: number;
     date: string;
@@ -96,6 +97,11 @@ export type Expense = {
   date: string;
 };
 
+export type RecentSale = Sale & {
+  productName: string;
+  inventoryItemId: string;
+};
+
 export type InventorySummaryData = {
   // Inventory Metrics
   currentStockValue: number;
@@ -115,5 +121,5 @@ export type InventorySummaryData = {
     value: number;
   }[];
   // Sales History
-  recentSales: (Sale & { productName: string })[];
+  recentSales: RecentSale[];
 };

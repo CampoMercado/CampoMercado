@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { collection, doc, deleteDoc, updateDoc, arrayUnion, writeBatch } from 'firebase/firestore';
+import { collection, doc, deleteDoc, updateDoc, arrayUnion, writeBatch, getDoc } from 'firebase/firestore';
 
 import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import type { UserProfile, InventoryItem, Produce, Price, Sale, Cost } from '@/lib/types';
@@ -166,6 +166,7 @@ export default function DashboardPage() {
      if (!user) return;
     const itemRef = doc(firestore, `users/${user.uid}/inventory`, itemId);
     const saleRecord: Sale = {
+        id: new Date().getTime().toString() + Math.random().toString(36).substring(2, 9),
         quantity,
         salePrice,
         date: new Date().toISOString(),
@@ -180,6 +181,46 @@ export default function DashboardPage() {
         description: `Se vendieron ${quantity} cajones a $${salePrice.toLocaleString()} c/u. Estado: ${saleStatus}`,
     });
   }
+
+  const handleUpdateSaleStatus = async (inventoryItemId: string, saleId: string) => {
+    if (!user || !firestore) return;
+    const itemRef = doc(firestore, `users/${user.uid}/inventory`, inventoryItemId);
+
+    try {
+      const docSnap = await getDoc(itemRef);
+
+      if (docSnap.exists()) {
+        const itemData = docSnap.data() as InventoryItem;
+        const sales = itemData.sales || [];
+        
+        let saleFound = false;
+        const updatedSales = sales.map(sale => {
+          if (sale.id === saleId) {
+            saleFound = true;
+            return { ...sale, status: 'Pagado' as const };
+          }
+          return sale;
+        });
+
+        if (saleFound) {
+          await updateDoc(itemRef, { sales: updatedSales });
+          toast({
+            title: 'Venta Actualizada',
+            description: 'El estado de la venta se ha actualizado a "Pagado".',
+          });
+        } else {
+            throw new Error("Sale ID not found in the inventory item.");
+        }
+      }
+    } catch (error) {
+      console.error("Error updating sale status:", error);
+      toast({
+        title: 'Error al actualizar',
+        description: 'No se pudo actualizar el estado de la venta.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   const isLoading =
     isUserLoading ||
@@ -240,7 +281,7 @@ export default function DashboardPage() {
                     />
                   ))}
                 </div>
-                <InventorySummary inventory={inventoryWithData} />
+                <InventorySummary inventory={inventoryWithData} onUpdateSaleStatus={handleUpdateSaleStatus} />
               </div>
             ) : (
               <div className="text-center py-16 border-2 border-dashed border-muted rounded-lg">

@@ -116,12 +116,13 @@
         "description": "Represents a single sale transaction from an inventory lot.",
         "type": "object",
         "properties": {
+            "id": { "type": "string", "description": "Unique identifier for the sale." },
             "quantity": { "type": "number", "description": "Number of crates sold." },
             "salePrice": { "type": "number", "description": "Price per crate for this sale." },
             "date": { "type": "string", "format": "date-time", "description": "ISO 8601 string of when the sale occurred." },
             "status": { "type": "string", "enum": ["Pagado", "Pendiente"], "description": "Status of the payment for this sale."}
         },
-        "required": ["quantity", "salePrice", "date", "status"]
+        "required": ["id", "quantity", "salePrice", "date", "status"]
     },
     "Cost": {
       "title": "Cost",
