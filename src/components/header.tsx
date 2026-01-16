@@ -32,7 +32,7 @@ export function Header() {
               <ArrowRight className="h-5 w-5 text-primary" />
               <span>Mercado</span>
             </span>
-            <span className="font-mono text-xs text-muted-foreground">v0.0.0.4</span>
+            <span className="font-mono text-xs text-muted-foreground">v0.0.0.5</span>
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
