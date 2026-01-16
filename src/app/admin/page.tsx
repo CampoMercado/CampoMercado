@@ -9,18 +9,18 @@ import { collection, doc, writeBatch, where, query, getDocs } from 'firebase/fir
 
 import { validatePriceAction } from './actions';
 import { UpdatePriceRow } from '@/components/admin/update-price-row';
+import { UserManagementTable } from '@/components/admin/user-management-table';
 import {
   useCollection,
   useFirestore,
   useMemoFirebase,
   useUser,
 } from '@/firebase';
-import { deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import type { Produce, Price, AggregatedProduct } from '@/lib/types';
+import type { Produce, Price, AggregatedProduct, UserProfile } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableHeader, TableRow, TableCell } from '@/components/ui/table';
 import {
   AlertDialog,
@@ -60,9 +60,11 @@ export default function AdminPage() {
   const firestore = useFirestore();
   const producesRef = useMemoFirebase(() => user ? collection(firestore, 'produces') : null, [firestore, user]);
   const pricesRef = useMemoFirebase(() => user ? collection(firestore, 'prices') : null, [firestore, user]);
+  const usersRef = useMemoFirebase(() => user ? collection(firestore, 'users') : null, [firestore, user]);
   
   const { data: producesData, isLoading: isLoadingProduces } = useCollection<Produce>(producesRef);
   const { data: pricesData, isLoading: isLoadingPrices } = useCollection<Price>(pricesRef);
+  const { data: usersData, isLoading: isLoadingUsers } = useCollection<UserProfile>(usersRef);
 
   const [validationAlert, setValidationAlert] = useState<{
     open: boolean;
@@ -196,11 +198,9 @@ export default function AdminPage() {
     try {
       const batch = writeBatch(firestore);
 
-      // 1. Delete the product document
       const produceDocRef = doc(firestore, 'produces', productId);
       batch.delete(produceDocRef);
       
-      // 2. Query and delete all associated prices
       const pricesToDeleteQuery = query(pricesRef, where('produceId', '==', productId));
       
       const pricesSnapshot = await getDocs(pricesToDeleteQuery);
@@ -225,14 +225,15 @@ export default function AdminPage() {
     }
   };
   
-  const isLoading = isLoadingProduces || isLoadingPrices;
+  const isLoading = isLoadingProduces || isLoadingPrices || isLoadingUsers;
 
   return (
     <>
       <Tabs defaultValue="update">
-        <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+        <TabsList className="grid w-full grid-cols-3 md:w-[600px]">
           <TabsTrigger value="update">Actualizar Precios</TabsTrigger>
           <TabsTrigger value="add">Agregar Producto</TabsTrigger>
+          <TabsTrigger value="users">Gestionar Usuarios</TabsTrigger>
         </TabsList>
         <TabsContent value="update">
           <Card>
@@ -268,7 +269,7 @@ export default function AdminPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {isLoading ? (
+                    {isLoadingProduces || isLoadingPrices ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-8">
                           Cargando productos...
@@ -378,6 +379,19 @@ export default function AdminPage() {
               </Form>
             </CardContent>
           </Card>
+        </TabsContent>
+        <TabsContent value="users">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Gestión de Usuarios</CardTitle>
+                    <CardDescription>
+                        Ver y administrar todos los usuarios registrados en la plataforma.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <UserManagementTable users={usersData || []} isLoading={isLoadingUsers} />
+                </CardContent>
+            </Card>
         </TabsContent>
       </Tabs>
 
